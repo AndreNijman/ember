@@ -4,20 +4,22 @@ import "../../Services"
 
 Item {
     id: root
-    //  FocusedWindow shows the active window title in the centre of the bar.
-    //  Elides to "…" when narrower than content. No icon.
+    property alias text: label.text
+    visible: (label.text || "").length > 0
     implicitHeight: Theme.barH
-    implicitWidth: label.implicitWidth + Theme.s4 * 2
 
     Text {
         id: label
-        anchors.centerIn: parent
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.verticalCenter: parent.verticalCenter
+        anchors.leftMargin: Theme.s3
+        anchors.rightMargin: Theme.s3
         text: HyprlandService.focusedWindowTitle || ""
         elide: Text.ElideRight
         maximumLineCount: 1
-        width: root.width - Theme.s4 * 2
-        horizontalAlignment: Text.AlignHCenter
-        color: Theme.ink7
+        horizontalAlignment: Text.AlignLeft
+        color: Theme.ink6
         font.family: Theme.fontUi
         font.pixelSize: Theme.tsm
     }

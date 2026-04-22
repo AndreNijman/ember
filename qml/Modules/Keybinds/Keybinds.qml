@@ -22,6 +22,7 @@ PanelWindow {
         { title: "apps", binds: [
             { k: "SUPER T",            d: "terminal (kitty)" },
             { k: "SUPER W",            d: "browser (zen)" },
+            { k: "SUPER B",            d: "wallpaper picker" },
             { k: "SUPER C",            d: "claude code" },
             { k: "SUPER M",            d: "spotify" },
             { k: "SUPER D",            d: "discord" },

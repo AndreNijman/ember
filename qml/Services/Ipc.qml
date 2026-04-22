@@ -35,6 +35,10 @@ QtObject {
     signal showKeybinds()
     signal hideKeybinds()
 
+    signal toggleWallpaper()
+    signal showWallpaper()
+    signal hideWallpaper()
+
     function status() {
         return JSON.stringify({
             version: { major: 0, minor: 1, patch: 0 },

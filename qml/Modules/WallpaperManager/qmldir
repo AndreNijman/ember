@@ -1,3 +1,4 @@
 module WallpaperManager
 WallpaperManager 1.0 WallpaperManager.qml
 Tile             1.0 Tile.qml
+WorkspaceCell    1.0 WorkspaceCell.qml

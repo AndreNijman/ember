@@ -11,9 +11,7 @@ QtObject {
 
     property var workspaces: Hyprland.workspaces ? Hyprland.workspaces.values : []
     property int focusedWorkspaceId: Hyprland.focusedWorkspace ? Hyprland.focusedWorkspace.id : 0
-    property string focusedWindowTitle: Hyprland.focusedMonitor && Hyprland.focusedMonitor.activeWorkspace && Hyprland.focusedMonitor.activeWorkspace.lastIpcObject
-        ? (Hyprland.focusedMonitor.activeWorkspace.lastIpcObject.title || "")
-        : ""
+    property string focusedWindowTitle: Hyprland.activeToplevel ? (Hyprland.activeToplevel.title || "") : ""
 
     signal workspaceChanged(int id)
 

@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Wayland
 import "../../Theme"
 import "../../Atoms" as Atoms
+import "../../Services"
 
 PanelWindow {
     id: root
@@ -11,6 +12,7 @@ PanelWindow {
     //  the desktop. Three horizontal regions: left (identity + workspaces),
     //  centre (focused title), right (network/volume/battery/clock).
 
+    visible: !LockService.locked
     anchors {
         top:    true
         left:   true
@@ -37,11 +39,6 @@ PanelWindow {
         WorkspaceStrip {}
     }
 
-    FocusedWindow {
-        anchors.centerIn: parent
-        width: Math.min(root.width * 0.5, 480)
-    }
-
     Row {
         id: rightCluster
         anchors.right: parent.right
@@ -51,6 +48,14 @@ PanelWindow {
         Volume {}
         Battery {}
         Clock {}
+    }
+
+    FocusedWindow {
+        anchors.left: leftCluster.right
+        anchors.right: rightCluster.left
+        anchors.verticalCenter: parent.verticalCenter
+        anchors.leftMargin: Theme.s3
+        anchors.rightMargin: Theme.s3
     }
 
     Atoms.Hairline {
