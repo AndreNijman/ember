@@ -7,3 +7,6 @@ AudioInputPanel  1.0 AudioInputPanel.qml
 PowerRow         1.0 PowerRow.qml
 PowerCell        1.0 PowerCell.qml
 PowerProfileRow  1.0 PowerProfileRow.qml
+WifiPanel        1.0 WifiPanel.qml
+BluetoothPanel   1.0 BluetoothPanel.qml
+MediaTile        1.0 MediaTile.qml

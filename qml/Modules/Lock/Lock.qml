@@ -15,6 +15,9 @@ PanelWindow {
 
     property string pwd: ""
     property bool flashError: false
+    property bool capsOn: false
+
+    onVisibleChanged: if (visible) authZone.forceActiveFocus()
 
     Connections {
         target: LockService
@@ -30,6 +33,33 @@ PanelWindow {
         id: flashTimer
         interval: 320
         onTriggered: root.flashError = false
+    }
+
+    function _handleKey(event) {
+        if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+            if (!LockService.authenticating && root.pwd.length > 0)
+                LockService.submit(root.pwd)
+        } else if (event.key === Qt.Key_Backspace) {
+            if (root.pwd.length > 0)
+                root.pwd = root.pwd.substring(0, root.pwd.length - 1)
+        } else if (event.key === Qt.Key_Delete) {
+            root.pwd = ""
+        } else if (event.text && event.text.length > 0
+                   && event.key !== Qt.Key_Tab
+                   && event.key !== Qt.Key_Escape) {
+            root.pwd += event.text
+            _detectCaps(event.text, event.modifiers)
+        }
+        event.accepted = true
+    }
+
+    function _detectCaps(ch, mods) {
+        if (ch.length !== 1) return
+        var upper = ch === ch.toUpperCase() && ch !== ch.toLowerCase()
+        var lower = ch === ch.toLowerCase() && ch !== ch.toUpperCase()
+        var shift = !!(mods & Qt.ShiftModifier)
+        if ((upper && !shift) || (lower && shift)) capsOn = true
+        else if ((lower && !shift) || (upper && shift)) capsOn = false
     }
 
     Column {
@@ -63,32 +93,10 @@ PanelWindow {
         anchors.bottomMargin: Theme.s8
         width: 520
         height: Theme.tap
-        focus: root.visible
+        focus: true
+        Component.onCompleted: if (root.visible) forceActiveFocus()
 
-        TextInput {
-            id: input
-            anchors.fill: parent
-            visible: false
-            enabled: !LockService.authenticating
-            echoMode: TextInput.Password
-            focus: root.visible
-            Keys.onReturnPressed: (event) => {
-                LockService.submit(root.pwd)
-                event.accepted = true
-            }
-            Keys.onPressed: (event) => {
-                if (event.key === Qt.Key_Backspace) {
-                    if (root.pwd.length > 0) root.pwd = root.pwd.substring(0, root.pwd.length - 1)
-                    event.accepted = true
-                } else if (event.key === Qt.Key_Delete) {
-                    root.pwd = ""
-                    event.accepted = true
-                } else if (event.text && event.text.length > 0 && event.key !== Qt.Key_Return && event.key !== Qt.Key_Enter && event.key !== Qt.Key_Tab && event.key !== Qt.Key_Escape) {
-                    root.pwd += event.text
-                    event.accepted = true
-                }
-            }
-        }
+        Keys.onPressed: (event) => root._handleKey(event)
 
         Row {
             id: dots
@@ -115,6 +123,15 @@ PanelWindow {
                 antialiasing: false
                 visible: caretBlink.on
             }
+
+            Text {
+                visible: root.capsOn
+                anchors.verticalCenter: parent.verticalCenter
+                text: "^"
+                color: Theme.warn
+                font.family: Theme.fontUi
+                font.pixelSize: Theme.txs
+            }
         }
 
         Timer {
@@ -129,7 +146,7 @@ PanelWindow {
 
     MouseArea {
         anchors.fill: parent
-        onPressed: (mouse) => { input.forceActiveFocus(); mouse.accepted = false }
+        onPressed: (mouse) => { authZone.forceActiveFocus(); mouse.accepted = false }
         preventStealing: false
         propagateComposedEvents: true
     }

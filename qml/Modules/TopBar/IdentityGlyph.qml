@@ -10,7 +10,7 @@ Item {
     Text {
         id: label
         anchors.centerIn: parent
-        text: "aqs"
+        text: "Ember"
         color: Theme.accent
         font.family: Theme.fontUi
         font.pixelSize: Theme.tsm

@@ -35,6 +35,7 @@ Item {
                     color: AudioService.muted ? Theme.ink5 : Theme.ink7
                     font.family: Theme.fontUi
                     font.pixelSize: Theme.t2xs
+                    font.features: {"tnum": 1}
                 }
             }
         }

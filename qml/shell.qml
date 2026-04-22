@@ -9,6 +9,10 @@ import "Modules/OSD"
 import "Modules/Lock"
 import "Modules/WallpaperManager"
 import "Modules/Keybinds"
+import "Modules/Clipboard"
+import "Modules/SingBox"
+import "Modules/Calendar"
+import "Modules/Overview"
 import "Services"
 
 ShellRoot {
@@ -24,11 +28,16 @@ ShellRoot {
 
     Launcher           { id: launcher }
     NotificationCenter { id: notif    }
+    ToastHost          { id: toasts  }
     ControlCenter      { id: control  }
     OsdHost            { id: osd      }
     Lock               { id: lock     }
     WallpaperManager   { id: wallpaper }
     Keybinds           { id: keybinds }
+    Calendar           { id: calendar }
+    Overview           { id: overview }
+    Clipboard          { id: clipboard }
+    SingBoxPanel       { id: singbox  }
 
     Connections {
         target: HyprlandService
@@ -53,6 +62,18 @@ ShellRoot {
         function onOsdBrightness(v)      { BrightnessService.set(v); osd.showBrightness(v) }
         function onWorkspaceFocus(id)    { HyprlandService.focusWorkspace(id) }
         function onSetWallpaper(out, p)  { WallpaperService.set(out, p) }
+        function onToggleSingBox()        { singbox.open_ = !singbox.open_ }
+        function onShowSingBox()          { singbox.open_ = true }
+        function onHideSingBox()          { singbox.open_ = false }
+        function onToggleClipboard()      { clipboard.open_ = !clipboard.open_ }
+        function onShowClipboard()        { clipboard.open_ = true }
+        function onHideClipboard()        { clipboard.open_ = false }
+        function onToggleCalendar()       { calendar.open_ = !calendar.open_ }
+        function onShowCalendar()         { calendar.open_ = true }
+        function onHideCalendar()         { calendar.open_ = false }
+        function onToggleOverview()      { overview.open_ = !overview.open_ }
+        function onShowOverview()        { overview.open_ = true }
+        function onHideOverview()        { overview.open_ = false }
         function onToggleKeybinds()      { keybinds.open_ = !keybinds.open_ }
         function onShowKeybinds()        { keybinds.open_ = true }
         function onHideKeybinds()        { keybinds.open_ = false }
@@ -129,13 +150,36 @@ ShellRoot {
             osd.showVolume(AudioService.volume, AudioService.muted)
             return "ok"
         }
-        function micmute(): string { AudioService.toggleMicMute(); return "ok" }
+        function micmute(): string {
+            AudioService.toggleMicMute()
+            osd.showMic(AudioService.sourceMuted)
+            return "ok"
+        }
     }
     IpcHandler {
         target: "keybinds"
         function toggle(): string { Ipc.toggleKeybinds(); return "ok" }
         function show(): string   { Ipc.showKeybinds();   return "ok" }
         function hide(): string   { Ipc.hideKeybinds();   return "ok" }
+    }
+    IpcHandler {
+        target: "singbox"
+        function toggle(): string { Ipc.toggleSingBox(); return "ok" }
+        function show(): string   { Ipc.showSingBox();   return "ok" }
+        function hide(): string   { Ipc.hideSingBox();   return "ok" }
+        function connect(): string { SingBoxService.toggle(); return "ok" }
+    }
+    IpcHandler {
+        target: "clipboard"
+        function toggle(): string { Ipc.toggleClipboard(); return "ok" }
+        function show(): string   { Ipc.showClipboard();   return "ok" }
+        function hide(): string   { Ipc.hideClipboard();   return "ok" }
+    }
+    IpcHandler {
+        target: "overview"
+        function toggle(): string { Ipc.toggleOverview(); return "ok" }
+        function show(): string   { Ipc.showOverview();   return "ok" }
+        function hide(): string   { Ipc.hideOverview();   return "ok" }
     }
     IpcHandler {
         target: "brightness"

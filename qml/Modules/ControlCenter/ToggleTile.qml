@@ -3,10 +3,12 @@ import "../../Theme"
 
 Rectangle {
     id: root
-    //  ToggleTile: a boxed on/off tile. 1px hairline border, accent when on.
     property string label: ""
     property bool on: false
+    property bool expandable: false
+    property bool expanded: false
     signal toggled(bool value)
+    signal expandClicked()
 
     implicitHeight: Theme.tap
     implicitWidth: 160
@@ -27,10 +29,30 @@ Rectangle {
             font.family: Theme.fontUi
             font.pixelSize: Theme.tsm
         }
-        Item { width: 1; height: 1 }
     }
+
+    Text {
+        visible: root.expandable
+        anchors.right: parent.right
+        anchors.rightMargin: Theme.s3
+        anchors.verticalCenter: parent.verticalCenter
+        text: root.expanded ? "‹" : "›"
+        color: Theme.ink5
+        font.family: Theme.fontUi
+        font.pixelSize: Theme.tmd
+        MouseArea {
+            anchors.fill: parent
+            anchors.margins: -Theme.s2
+            cursorShape: Qt.PointingHandCursor
+            onClicked: root.expandClicked()
+        }
+    }
+
     MouseArea {
-        anchors.fill: parent
+        anchors.left: parent.left
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        width: root.expandable ? parent.width - 32 : parent.width
         onClicked: { root.on = !root.on; root.toggled(root.on) }
     }
 }

@@ -43,6 +43,7 @@ Item {
             color: root.isMuted ? Theme.ink5 : Theme.ink6
             font.family: Theme.fontUi
             font.pixelSize: Theme.t2xs
+            font.features: {"tnum": 1}
             width: 32
         }
 

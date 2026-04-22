@@ -6,15 +6,14 @@ import "../../Services"
 
 PanelWindow {
     id: root
-    //  OsdHost: 280px-wide popup centred-bottom. Shows one OsdBar at a time.
-    property string kind: ""  // "volume" | "brightness" | "caps"
+    property string kind: ""
     property real value: 0.0
     property bool muted: false
-    property int   timeoutMs: 1200
+    property int timeoutMs: 1200
 
     visible: kind.length > 0
-    implicitWidth: 280
-    implicitHeight: bar.implicitHeight
+    implicitWidth: 320
+    implicitHeight: 56
     color: Theme.ink1
     WlrLayershell.namespace: "aqs-osd"
     WlrLayershell.layer: WlrLayer.Overlay
@@ -25,20 +24,28 @@ PanelWindow {
     OsdBar {
         id: bar
         anchors.fill: parent
-        label: root.kind === "volume" ? "volume" :
-               root.kind === "brightness" ? "brightness" :
-               root.kind === "caps" ? "caps lock" : ""
+        anchors.margins: Theme.s3
+        label: {
+            if (root.kind === "volume") return "vol"
+            if (root.kind === "brightness") return "bri"
+            if (root.kind === "mic") return "mic"
+            return root.kind
+        }
         value: root.value
         muted: root.muted
     }
 
     Timer {
+        id: dismiss
         interval: root.timeoutMs
-        running: root.visible
         onTriggered: root.kind = ""
     }
 
-    function showVolume(v, muted) { value = v; this.muted = muted; kind = "volume" }
-    function showBrightness(v)    { value = v; muted = false;     kind = "brightness" }
-    function showCaps(on)         { value = on ? 1 : 0; muted = false; kind = "caps" }
+    function _show(k, v, m) {
+        kind = k; value = v; muted = m
+        dismiss.restart()
+    }
+    function showVolume(v, m)   { _show("volume", v, m) }
+    function showBrightness(v)  { _show("brightness", v, false) }
+    function showMic(m)         { _show("mic", m ? 0 : 1, m) }
 }

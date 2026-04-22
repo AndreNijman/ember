@@ -5,63 +5,80 @@ import "../../Services"
 
 Item {
     id: root
-    //  PowerRow: four hairline-bordered action cells for lock / suspend /
-    //  reboot / shutdown. Also holds a separate logout cell beneath.
-    implicitHeight: Theme.tap * 2
+    implicitHeight: expanded ? expandedH : Theme.tap
+    property bool expanded: false
+    property int expandedH: Theme.tap + Theme.tap + Theme.tap
 
     Column {
         anchors.fill: parent
         spacing: 0
 
         Rectangle {
-            width: parent.width; height: Theme.rowH; color: Theme.ink2
+            width: parent.width; height: Theme.tap
+            color: Theme.ink1
+            border.width: Theme.hairW
+            border.color: Theme.hair
             antialiasing: false
-            Text {
-                anchors.verticalCenter: parent.verticalCenter
-                anchors.left: parent.left
+
+            Row {
+                anchors.fill: parent
                 anchors.leftMargin: Theme.s3
-                text: "power"
-                color: Theme.ink8
+                anchors.rightMargin: Theme.s3
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "power"
+                    color: Theme.ink8
+                    font.family: Theme.fontUi
+                    font.pixelSize: Theme.tsm
+                }
+            }
+            Text {
+                anchors.right: parent.right
+                anchors.rightMargin: Theme.s3
+                anchors.verticalCenter: parent.verticalCenter
+                text: root.expanded ? "‹" : "›"
+                color: Theme.ink5
                 font.family: Theme.fontUi
-                font.pixelSize: Theme.tsm
+                font.pixelSize: Theme.tmd
+            }
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: root.expanded = !root.expanded
             }
         }
 
         Grid {
+            visible: root.expanded
             width: parent.width
             columns: 4
-            rowSpacing: 0
-            columnSpacing: 0
+            rowSpacing: 0; columnSpacing: 0
 
             PowerCell {
-                width: parent.width / 4
-                label: "lock"
+                width: parent.width / 4; label: "lock"
                 onActivated: Ipc.lockEngage()
             }
             PowerCell {
-                width: parent.width / 4
-                label: "suspend"
+                width: parent.width / 4; label: "suspend"
                 onActivated: runner.exec(["systemctl", "suspend"])
             }
             PowerCell {
-                width: parent.width / 4
-                label: "reboot"
+                width: parent.width / 4; label: "reboot"
+                holdConfirm: true
                 onActivated: runner.exec(["systemctl", "reboot"])
             }
             PowerCell {
-                width: parent.width / 4
-                label: "off"
-                danger: true
+                width: parent.width / 4; label: "off"
+                danger: true; holdConfirm: true
                 onActivated: runner.exec(["systemctl", "poweroff"])
             }
         }
 
         Rectangle {
-            width: parent.width
-            height: Theme.tap
+            visible: root.expanded
+            width: parent.width; height: Theme.tap
             color: Theme.ink1
-            border.width: Theme.hairW
-            border.color: Theme.hair
+            border.width: Theme.hairW; border.color: Theme.hair
             antialiasing: false
             Text {
                 anchors.centerIn: parent
@@ -81,9 +98,6 @@ Item {
     Process {
         id: runner
         command: ["true"]
-        function exec(cmd) {
-            runner.command = cmd
-            runner.running = true
-        }
+        function exec(cmd) { runner.command = cmd; runner.running = true }
     }
 }

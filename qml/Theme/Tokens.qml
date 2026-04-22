@@ -64,8 +64,8 @@ QtObject {
     readonly property int tap:     40
 
     // --- motion (ms) ---------------------------------------------------
-    readonly property int tFast: 90
-    readonly property int tMed:  160
+    readonly property int tFast: 120
+    readonly property int tMed:  240
     readonly property int tSlow: 260
     //  QML has no cubic-bezier token type; consumers use Easing.BezierSpline
     //  with the four control points below. (0.2,0) -> (0,1) shape.

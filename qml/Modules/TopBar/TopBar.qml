@@ -5,13 +5,11 @@ import "../../Theme"
 import "../../Atoms" as Atoms
 import "../../Services"
 
+// Multi-monitor: bar renders on every output (via Variants in shell.qml).
+// Status cluster (right) shows on all outputs. MPRIS media and notifications
+// are singleton PanelWindows, so they appear once on the primary output.
 PanelWindow {
     id: root
-    //  TopBar: 28px PanelWindow anchored to top of every output. Canvas
-    //  is ink1; a single hairline at the bottom edge separates it from
-    //  the desktop. Three horizontal regions: left (identity + workspaces),
-    //  centre (focused title), right (network/volume/battery/clock).
-
     visible: !LockService.locked
     anchors {
         top:    true
@@ -39,23 +37,47 @@ PanelWindow {
         WorkspaceStrip {}
     }
 
+    Clock {
+        anchors.centerIn: parent
+    }
+
+    Row {
+        id: centerLeftCluster
+        anchors.left: leftCluster.right
+        anchors.verticalCenter: parent.verticalCenter
+        anchors.leftMargin: Theme.s3
+        spacing: Theme.s2
+        clip: true
+
+        FocusedWindow { id: focusTitle }
+
+        Atoms.Hairline {
+            orientation: Qt.Vertical
+            height: Theme.barH - Theme.s2 * 2
+            anchors.verticalCenter: parent.verticalCenter
+            dim: true
+            visible: focusTitle.visible && tray.visible
+        }
+
+        TrayStrip { id: tray }
+    }
+
     Row {
         id: rightCluster
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
         spacing: Theme.s2
+        Vpn {}
         Network {}
         Volume {}
         Battery {}
-        Clock {}
-    }
-
-    FocusedWindow {
-        anchors.left: leftCluster.right
-        anchors.right: rightCluster.left
-        anchors.verticalCenter: parent.verticalCenter
-        anchors.leftMargin: Theme.s3
-        anchors.rightMargin: Theme.s3
+        Rectangle {
+            visible: NotifService.items.length > 0 && !NotifService.dnd
+            width: 4; height: 4
+            anchors.verticalCenter: parent.verticalCenter
+            color: Theme.accent
+            antialiasing: false
+        }
     }
 
     Atoms.Hairline {

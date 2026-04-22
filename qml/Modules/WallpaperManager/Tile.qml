@@ -5,6 +5,7 @@ Item {
     id: root
     property string path: ""
     property bool active: false
+    property bool isCurrentWallpaper: false
     signal picked()
 
     implicitWidth: 180
@@ -25,8 +26,8 @@ Item {
     Rectangle {
         anchors.fill: parent
         color: "transparent"
-        border.width: root.active ? 2 : (hover.containsMouse ? Theme.hairW : 0)
-        border.color: Theme.accent
+        border.width: root.active ? 2 : root.isCurrentWallpaper ? 1 : (hover.containsMouse ? Theme.hairW : 0)
+        border.color: root.active ? Theme.accent : root.isCurrentWallpaper ? Theme.accent : Theme.hair
         antialiasing: false
     }
 

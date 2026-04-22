@@ -3,3 +3,4 @@ NotificationCenter 1.0 NotificationCenter.qml
 Notification       1.0 Notification.qml
 Group              1.0 Group.qml
 Toast              1.0 Toast.qml
+ToastHost          1.0 ToastHost.qml

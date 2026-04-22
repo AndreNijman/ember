@@ -4,11 +4,8 @@ import "../../Atoms" as Atoms
 
 Item {
     id: root
-    //  WorkspacePip: a numbered box that flashes the accent strip when
-    //  focused and dims when empty. Click to focus the workspace.
     property int wsId: 1
     property bool focused: false
-    property bool occupied: false
     signal clicked()
 
     implicitWidth: 20
@@ -22,9 +19,10 @@ Item {
     Text {
         anchors.centerIn: parent
         text: root.wsId
-        color: root.focused ? Theme.accent : (root.occupied ? Theme.ink8 : Theme.ink5)
+        color: root.focused ? Theme.accent : Theme.ink8
         font.family: Theme.fontUi
         font.pixelSize: Theme.tsm
+        font.features: {"tnum": 1}
     }
     Atoms.Strip {
         anchors.bottom: parent.bottom

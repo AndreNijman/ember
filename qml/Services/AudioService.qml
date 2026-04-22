@@ -8,6 +8,13 @@ QtObject {
     property var sink: Pipewire.defaultAudioSink
     property var source: Pipewire.defaultAudioSource
 
+    property PwObjectTracker _sinkTracker: PwObjectTracker {
+        objects: root.sink ? [root.sink] : []
+    }
+    property PwObjectTracker _sourceTracker: PwObjectTracker {
+        objects: root.source ? [root.source] : []
+    }
+
     readonly property real volume: sink && sink.audio ? sink.audio.volume : 0.0
     readonly property bool muted:  sink && sink.audio ? sink.audio.muted  : false
     readonly property string sinkName: sink ? (sink.description || sink.name || "") : ""
@@ -18,19 +25,22 @@ QtObject {
 
     property var sinks: []
     property var sources: []
+    property var streams: []
 
     signal volumeSet(real value)
 
     function _rebuildLists() {
-        var s = [], src = []
+        var s = [], src = [], str = []
         for (var i = 0; i < Pipewire.nodes.length; i++) {
             var n = Pipewire.nodes[i]
-            if (!n || !n.audio || n.isStream) continue
+            if (!n || !n.audio) continue
+            if (n.isStream) { str.push(n); continue }
             if (n.isSink) s.push(n)
             else src.push(n)
         }
         sinks = s
         sources = src
+        streams = str
     }
 
     onSinkChanged: _rebuildLists()

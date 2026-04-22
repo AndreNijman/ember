@@ -4,17 +4,17 @@ import "../../Services"
 
 Item {
     id: root
-    //  Volume composite: percent in the bar. Muted -> ink5 + "M" suffix.
     implicitHeight: Theme.barH
     implicitWidth: label.implicitWidth + Theme.s3 * 2
 
     Text {
         id: label
         anchors.centerIn: parent
-        text: AudioService.muted ? "mute" : (Math.round(AudioService.volume * 100) + "%")
+        text: AudioService.muted ? "vol mute" : ("vol " + Math.round(AudioService.volume * 100) + "%")
         color: AudioService.muted ? Theme.ink5 : Theme.ink7
         font.family: Theme.fontUi
         font.pixelSize: Theme.tsm
+        font.features: {"tnum": 1}
     }
-    MouseArea { anchors.fill: parent; onClicked: AudioService.toggleMute() }
+    MouseArea { anchors.fill: parent; onClicked: Ipc.toggleControl() }
 }
