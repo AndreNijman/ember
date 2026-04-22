@@ -39,6 +39,10 @@ QtObject {
     signal showCalendar()
     signal hideCalendar()
 
+    signal toggleOverview()
+    signal showOverview()
+    signal hideOverview()
+
     signal toggleWallpaper()
     signal showWallpaper()
     signal hideWallpaper()

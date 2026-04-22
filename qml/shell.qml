@@ -10,6 +10,7 @@ import "Modules/Lock"
 import "Modules/WallpaperManager"
 import "Modules/Keybinds"
 import "Modules/Calendar"
+import "Modules/Overview"
 import "Services"
 
 ShellRoot {
@@ -32,6 +33,7 @@ ShellRoot {
     WallpaperManager   { id: wallpaper }
     Keybinds           { id: keybinds }
     Calendar           { id: calendar }
+    Overview           { id: overview }
 
     Connections {
         target: HyprlandService
@@ -59,6 +61,9 @@ ShellRoot {
         function onToggleCalendar()       { calendar.open_ = !calendar.open_ }
         function onShowCalendar()         { calendar.open_ = true }
         function onHideCalendar()         { calendar.open_ = false }
+        function onToggleOverview()      { overview.open_ = !overview.open_ }
+        function onShowOverview()        { overview.open_ = true }
+        function onHideOverview()        { overview.open_ = false }
         function onToggleKeybinds()      { keybinds.open_ = !keybinds.open_ }
         function onShowKeybinds()        { keybinds.open_ = true }
         function onHideKeybinds()        { keybinds.open_ = false }
@@ -146,6 +151,12 @@ ShellRoot {
         function toggle(): string { Ipc.toggleKeybinds(); return "ok" }
         function show(): string   { Ipc.showKeybinds();   return "ok" }
         function hide(): string   { Ipc.hideKeybinds();   return "ok" }
+    }
+    IpcHandler {
+        target: "overview"
+        function toggle(): string { Ipc.toggleOverview(); return "ok" }
+        function show(): string   { Ipc.showOverview();   return "ok" }
+        function hide(): string   { Ipc.hideOverview();   return "ok" }
     }
     IpcHandler {
         target: "brightness"
