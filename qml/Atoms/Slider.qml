@@ -3,7 +3,6 @@ import "../Theme"
 
 Item {
     id: root
-    //  Slider: horizontal value control. Thin 2px track + square thumb.
     property real value: 0.0
     property real min_: 0.0
     property real max_: 1.0
@@ -39,14 +38,12 @@ Item {
     }
     MouseArea {
         anchors.fill: parent
-        onPositionChanged: updateFromX(mouse.x)
-        onPressed: updateFromX(mouse.x)
+        onPositionChanged: (mouse) => _emit(mouse.x)
+        onPressed: (mouse) => _emit(mouse.x)
     }
     function clamped(v) { return Math.max(0, Math.min(1, (v - root.min_) / (root.max_ - root.min_ || 1))) }
-    function updateFromX(x) {
+    function _emit(x) {
         var t = Math.max(0, Math.min(1, x / width))
-        var v = root.min_ + t * (root.max_ - root.min_)
-        root.value = v
-        root.changed(v)
+        root.changed(root.min_ + t * (root.max_ - root.min_))
     }
 }

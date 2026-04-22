@@ -48,18 +48,12 @@ Item {
         }
 
         Atoms.Slider {
-            id: rowSlider
             width: parent.width - x
             anchors.verticalCenter: parent.verticalCenter
+            value: root.vol
             max_: 1.5
             onChanged: (v) => AudioService.setNodeVolume(root.node, v)
         }
-    }
-
-    Binding {
-        target: rowSlider
-        property: "value"
-        value: root.vol
     }
 
     MouseArea {

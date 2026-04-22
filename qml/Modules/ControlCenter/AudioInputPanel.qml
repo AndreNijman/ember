@@ -44,19 +44,14 @@ Item {
             width: parent.width
             height: Theme.rowH
             Atoms.Slider {
-                id: inSlider
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.leftMargin: Theme.s3
                 anchors.rightMargin: Theme.s3
+                value: AudioService.sourceVolume
                 max_: 1.5
                 onChanged: (v) => AudioService.setNodeVolume(AudioService.source, v)
-            }
-            Binding {
-                target: inSlider
-                property: "value"
-                value: AudioService.sourceVolume
             }
         }
 
