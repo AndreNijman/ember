@@ -24,4 +24,5 @@ Item {
         font.family: Theme.fontUi
         font.pixelSize: Theme.tsm
     }
+    MouseArea { anchors.fill: parent; onClicked: Ipc.toggleControl() }
 }

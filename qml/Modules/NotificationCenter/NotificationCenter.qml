@@ -16,7 +16,7 @@ PanelWindow {
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
     anchors { top: true; right: true }
-    margins { top: 32; right: 8 }
+    margins { top: Theme.barH; right: 0 }
     exclusiveZone: 0
 
     onVisibleChanged: if (visible) _focus.forceActiveFocus()

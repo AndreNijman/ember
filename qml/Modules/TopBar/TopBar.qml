@@ -37,13 +37,15 @@ PanelWindow {
         WorkspaceStrip {}
     }
 
+    Clock {
+        anchors.centerIn: parent
+    }
+
     Row {
-        id: centerCluster
+        id: centerLeftCluster
         anchors.left: leftCluster.right
-        anchors.right: rightCluster.left
         anchors.verticalCenter: parent.verticalCenter
         anchors.leftMargin: Theme.s3
-        anchors.rightMargin: Theme.s3
         spacing: Theme.s2
         clip: true
 
@@ -69,7 +71,6 @@ PanelWindow {
         Network {}
         Volume {}
         Battery {}
-        Clock {}
         Rectangle {
             visible: NotifService.items.length > 0 && !NotifService.dnd
             width: 4; height: 4

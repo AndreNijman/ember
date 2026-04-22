@@ -11,3 +11,4 @@ Volume          1.0 Volume.qml
 Network         1.0 Network.qml
 Vpn             1.0 Vpn.qml
 TrayStrip       1.0 TrayStrip.qml
+TrayMenu        1.0 TrayMenu.qml

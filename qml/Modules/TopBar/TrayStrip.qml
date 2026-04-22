@@ -33,12 +33,20 @@ Row {
                 anchors.fill: parent
                 acceptedButtons: Qt.LeftButton | Qt.RightButton
                 onClicked: (mouse) => {
-                    if (mouse.button === Qt.LeftButton)
+                    if (mouse.button === Qt.LeftButton) {
                         modelData.activate()
-                    else if (mouse.button === Qt.RightButton && modelData.hasMenu)
-                        modelData.menu.open()
+                    } else if (mouse.button === Qt.RightButton && modelData.hasMenu) {
+                        var global = mapToGlobal(width / 2, height)
+                        trayMenu.menuHandle = modelData.menu
+                        trayMenu.rightMargin = Math.max(0, (trayMenu.screen ? trayMenu.screen.width : 1920) - global.x - trayMenu.implicitWidth / 2)
+                        trayMenu.open_ = !trayMenu.open_
+                    }
                 }
             }
         }
+    }
+
+    TrayMenu {
+        id: trayMenu
     }
 }
