@@ -49,7 +49,10 @@ PanelWindow {
             ToggleTile { label: "dnd";       on: NotifService.dnd; width: parent.width / 2;       onToggled: (v) => NotifService.setDnd(v) }
             ToggleTile { label: "idle hold"; on: IdleService.inhibited; width: parent.width / 2;  onToggled: (v) => IdleService.setInhibited(v) }
         }
-        AudioRow { width: parent.width }
+        AudioOutputPanel { width: parent.width }
+        Atoms.Hairline { width: parent.width }
+        AudioInputPanel { width: parent.width }
+        Atoms.Hairline { width: parent.width }
         Item {
             width: parent.width
             height: Theme.rowH * 2
