@@ -21,7 +21,8 @@ PanelWindow {
     readonly property var sections: [
         { title: "apps", binds: [
             { k: "SUPER T",            d: "terminal (kitty)" },
-            { k: "SUPER B",            d: "browser (zen)" },
+            { k: "SUPER W",            d: "browser (zen)" },
+            { k: "SUPER B",            d: "wallpaper picker" },
             { k: "SUPER C",            d: "claude code" },
             { k: "SUPER M",            d: "spotify" },
             { k: "SUPER D",            d: "discord" },
@@ -29,7 +30,6 @@ PanelWindow {
             { k: "SUPER .",            d: "launcher" },
             { k: "SUPER K",            d: "control center" },
             { k: "SUPER N",            d: "notifications" },
-            { k: "SUPER W",            d: "wallpaper picker" },
             { k: "SUPER /",            d: "this sheet" },
         ] },
         { title: "window", binds: [
