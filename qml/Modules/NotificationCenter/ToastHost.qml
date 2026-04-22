@@ -13,7 +13,7 @@ PanelWindow {
     WlrLayershell.namespace: "aqs-toast"
     WlrLayershell.layer: WlrLayer.Overlay
     anchors { top: true; right: true }
-    margins { top: Theme.barH + Theme.s1; right: 0 }
+    margins { top: Theme.s1; right: 0 }
     exclusiveZone: 0
 
     property int maxToasts: 3

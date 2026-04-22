@@ -36,9 +36,10 @@ Row {
                     if (mouse.button === Qt.LeftButton) {
                         modelData.activate()
                     } else if (mouse.button === Qt.RightButton && modelData.hasMenu) {
-                        var global = mapToGlobal(width / 2, height)
+                        var global = mapToGlobal(width / 2, 0)
+                        var sw = Window.window ? Window.window.width : 1920
                         trayMenu.menuHandle = modelData.menu
-                        trayMenu.rightMargin = Math.max(0, (trayMenu.screen ? trayMenu.screen.width : 1920) - global.x - trayMenu.implicitWidth / 2)
+                        trayMenu.rightMargin = Math.max(0, sw - global.x - 110)
                         trayMenu.open_ = !trayMenu.open_
                     }
                 }
