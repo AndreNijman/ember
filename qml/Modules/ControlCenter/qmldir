@@ -1,7 +1,9 @@
 module ControlCenter
-ControlCenter 1.0 ControlCenter.qml
-ToggleTile    1.0 ToggleTile.qml
-AudioRow      1.0 AudioRow.qml
+ControlCenter    1.0 ControlCenter.qml
+ToggleTile       1.0 ToggleTile.qml
+AudioRow         1.0 AudioRow.qml
+AudioOutputPanel 1.0 AudioOutputPanel.qml
+AudioInputPanel  1.0 AudioInputPanel.qml
 PowerRow         1.0 PowerRow.qml
 PowerCell        1.0 PowerCell.qml
 PowerProfileRow  1.0 PowerProfileRow.qml
