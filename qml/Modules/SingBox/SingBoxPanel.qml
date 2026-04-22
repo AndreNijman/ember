@@ -169,41 +169,27 @@ PanelWindow {
             }
         }
 
-        Atoms.Hairline { width: parent.width }
-
         Rectangle {
+            visible: SingBoxService.active || SingBoxService.busy
             width: parent.width; height: Theme.tap
-            color: speedHover.containsMouse ? Theme.ink2 : Theme.ink1
+            color: forceHover.containsMouse ? Theme.ink2 : Theme.ink1
             border.width: Theme.hairW
-            border.color: Theme.hair
+            border.color: Theme.err
             antialiasing: false
 
             Text {
                 anchors.centerIn: parent
-                text: SingBoxService.speedRunning ? "running speedtest..." : "speedtest"
-                color: SingBoxService.speedRunning ? Theme.ink5 : Theme.ink7
+                text: "force kill"
+                color: Theme.err
                 font.family: Theme.fontUi
                 font.pixelSize: Theme.tsm
             }
             MouseArea {
-                id: speedHover
+                id: forceHover
                 anchors.fill: parent
                 hoverEnabled: true
-                cursorShape: SingBoxService.speedRunning ? Qt.ArrowCursor : Qt.PointingHandCursor
-                onClicked: SingBoxService.runSpeedtest()
-            }
-        }
-
-        Item {
-            visible: SingBoxService.speedResult.length > 0
-            width: parent.width; height: Theme.rowH
-            Text {
-                anchors.centerIn: parent
-                text: SingBoxService.speedResult
-                color: Theme.ink7
-                font.family: Theme.fontUi
-                font.pixelSize: Theme.tsm
-                font.features: {"tnum": 1}
+                cursorShape: Qt.PointingHandCursor
+                onClicked: SingBoxService.forceKill()
             }
         }
 

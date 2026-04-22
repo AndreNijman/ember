@@ -12,8 +12,6 @@ QtObject {
     property real txBytes: 0
     property real rxRate: 0
     property real txRate: 0
-    property string speedResult: ""
-    property bool speedRunning: false
 
     readonly property bool active: state === "on" || state === "checking" || state === "degraded"
     readonly property bool busy: state === "connecting" || state === "disconnecting"
@@ -29,11 +27,9 @@ QtObject {
         }
     }
 
-    function runSpeedtest() {
-        if (speedRunning) return
-        speedRunning = true
-        speedResult = ""
-        _speed.running = true
+    function forceKill() {
+        state = "disconnecting"
+        _forceKill.running = true
     }
 
     property real _prevRx: 0
@@ -72,6 +68,11 @@ QtObject {
     property Process _stop: Process {
         command: ["sudo", "-n", "systemctl", "stop", "sing-box.service"]
         onExited: { root.state = "off"; root.egressIp = ""; root.rxRate = 0; root.txRate = 0 }
+    }
+
+    property Process _forceKill: Process {
+        command: ["sh", "-c", "sudo -n systemctl kill -s SIGKILL sing-box.service; sudo -n systemctl stop sing-box.service; sudo -n ip link delete sb-tun 2>/dev/null; true"]
+        onExited: { root.state = "off"; root.egressIp = ""; root.rxRate = 0; root.txRate = 0; root._prevRx = 0; root._prevTx = 0 }
     }
 
     property Process _egressCheck: Process {
@@ -118,27 +119,6 @@ QtObject {
                 root.rxBytes = rx
                 root.txBytes = tx
             }
-        }
-    }
-
-    property Process _speed: Process {
-        command: ["timeout", "75", "speedtest", "--json", "--secure"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                root.speedRunning = false
-                try {
-                    var j = JSON.parse(this.text || "{}")
-                    var dl = (j.download / 1e6).toFixed(1)
-                    var ul = (j.upload / 1e6).toFixed(1)
-                    var ping = Math.round(j.ping)
-                    root.speedResult = "↓" + dl + "  ↑" + ul + "  " + ping + "ms"
-                } catch(e) {
-                    root.speedResult = "error"
-                }
-            }
-        }
-        onExited: (code) => {
-            if (code !== 0) { root.speedRunning = false; root.speedResult = "error" }
         }
     }
 
