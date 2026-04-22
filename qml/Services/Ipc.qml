@@ -35,6 +35,10 @@ QtObject {
     signal showKeybinds()
     signal hideKeybinds()
 
+    signal toggleClipboard()
+    signal showClipboard()
+    signal hideClipboard()
+
     signal toggleCalendar()
     signal showCalendar()
     signal hideCalendar()

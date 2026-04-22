@@ -9,6 +9,7 @@ import "Modules/OSD"
 import "Modules/Lock"
 import "Modules/WallpaperManager"
 import "Modules/Keybinds"
+import "Modules/Clipboard"
 import "Modules/Calendar"
 import "Modules/Overview"
 import "Services"
@@ -34,6 +35,7 @@ ShellRoot {
     Keybinds           { id: keybinds }
     Calendar           { id: calendar }
     Overview           { id: overview }
+    Clipboard          { id: clipboard }
 
     Connections {
         target: HyprlandService
@@ -58,6 +60,9 @@ ShellRoot {
         function onOsdBrightness(v)      { BrightnessService.set(v); osd.showBrightness(v) }
         function onWorkspaceFocus(id)    { HyprlandService.focusWorkspace(id) }
         function onSetWallpaper(out, p)  { WallpaperService.set(out, p) }
+        function onToggleClipboard()      { clipboard.open_ = !clipboard.open_ }
+        function onShowClipboard()        { clipboard.open_ = true }
+        function onHideClipboard()        { clipboard.open_ = false }
         function onToggleCalendar()       { calendar.open_ = !calendar.open_ }
         function onShowCalendar()         { calendar.open_ = true }
         function onHideCalendar()         { calendar.open_ = false }
@@ -151,6 +156,12 @@ ShellRoot {
         function toggle(): string { Ipc.toggleKeybinds(); return "ok" }
         function show(): string   { Ipc.showKeybinds();   return "ok" }
         function hide(): string   { Ipc.hideKeybinds();   return "ok" }
+    }
+    IpcHandler {
+        target: "clipboard"
+        function toggle(): string { Ipc.toggleClipboard(); return "ok" }
+        function show(): string   { Ipc.showClipboard();   return "ok" }
+        function hide(): string   { Ipc.hideClipboard();   return "ok" }
     }
     IpcHandler {
         target: "overview"
