@@ -10,6 +10,7 @@ import "Modules/Lock"
 import "Modules/WallpaperManager"
 import "Modules/Keybinds"
 import "Modules/Clipboard"
+import "Modules/SingBox"
 import "Modules/Calendar"
 import "Modules/Overview"
 import "Services"
@@ -36,6 +37,7 @@ ShellRoot {
     Calendar           { id: calendar }
     Overview           { id: overview }
     Clipboard          { id: clipboard }
+    SingBoxPanel       { id: singbox  }
 
     Connections {
         target: HyprlandService
@@ -60,6 +62,9 @@ ShellRoot {
         function onOsdBrightness(v)      { BrightnessService.set(v); osd.showBrightness(v) }
         function onWorkspaceFocus(id)    { HyprlandService.focusWorkspace(id) }
         function onSetWallpaper(out, p)  { WallpaperService.set(out, p) }
+        function onToggleSingBox()        { singbox.open_ = !singbox.open_ }
+        function onShowSingBox()          { singbox.open_ = true }
+        function onHideSingBox()          { singbox.open_ = false }
         function onToggleClipboard()      { clipboard.open_ = !clipboard.open_ }
         function onShowClipboard()        { clipboard.open_ = true }
         function onHideClipboard()        { clipboard.open_ = false }
@@ -156,6 +161,13 @@ ShellRoot {
         function toggle(): string { Ipc.toggleKeybinds(); return "ok" }
         function show(): string   { Ipc.showKeybinds();   return "ok" }
         function hide(): string   { Ipc.hideKeybinds();   return "ok" }
+    }
+    IpcHandler {
+        target: "singbox"
+        function toggle(): string { Ipc.toggleSingBox(); return "ok" }
+        function show(): string   { Ipc.showSingBox();   return "ok" }
+        function hide(): string   { Ipc.hideSingBox();   return "ok" }
+        function connect(): string { SingBoxService.toggle(); return "ok" }
     }
     IpcHandler {
         target: "clipboard"
