@@ -224,7 +224,7 @@ PanelWindow {
 
             Atoms.Hairline { width: parent.width }
 
-            // --- connect button ---
+            // --- primary button: connect / disconnect / reconnect ---
             Rectangle {
                 id: btn
                 width: parent.width
@@ -255,6 +255,37 @@ PanelWindow {
                     hoverEnabled: true
                     cursorShape: btn.busy ? Qt.ForbiddenCursor : Qt.PointingHandCursor
                     onClicked: { if (!btn.busy) VpnService.toggle() }
+                }
+            }
+
+            Atoms.Hairline {
+                width: parent.width
+                visible: VpnService.state !== "off"
+            }
+
+            // --- force-quit: unconditional stop, for wedged tunnels ---
+            Rectangle {
+                id: forceBtn
+                width: parent.width
+                height: visible ? Theme.rowH : 0
+                visible: VpnService.state !== "off"
+                color: forceMouse.containsMouse ? Theme.ink2 : Theme.ink1
+                antialiasing: false
+
+                Text {
+                    anchors.centerIn: parent
+                    text: "force quit"
+                    color: forceMouse.containsMouse ? Theme.err : Theme.ink6
+                    font.family: Theme.fontUi
+                    font.pixelSize: Theme.txs
+                }
+
+                MouseArea {
+                    id: forceMouse
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: VpnService.forceStop()
                 }
             }
 

@@ -45,6 +45,26 @@ QtObject {
         }
     }
 
+    //  Force-quit: hard stop regardless of current state. For when the tunnel
+    //  is wedged in connecting/checking/disconnecting or a degraded loop.
+    //  Fires stop unconditionally and snaps UI to "off" without waiting for
+    //  the 3s state poll.
+    function forceStop() {
+        root.lastError = "force-stopped"
+        root.state = "off"
+        root.serviceActive = false
+        root.egressIp = ""
+        root.latencyMs = -1
+        root.rxRate = 0
+        root.txRate = 0
+        root.prevRx = 0
+        root.prevTx = 0
+        if (_startProc.running)   _startProc.running = false
+        if (_restartProc.running) _restartProc.running = false
+        if (_egressProc.running)  _egressProc.running = false
+        _stopProc.running = true
+    }
+
     function refresh() {
         if (!_stateProc.running) _stateProc.running = true
         if (root.serviceActive) _checkEgress()

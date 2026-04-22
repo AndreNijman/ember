@@ -44,6 +44,7 @@ QtObject {
     signal hideVpn()
     signal vpnConnect()
     signal vpnDisconnect()
+    signal vpnForceStop()
 
     function status() {
         return JSON.stringify({

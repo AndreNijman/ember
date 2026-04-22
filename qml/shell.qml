@@ -66,6 +66,7 @@ ShellRoot {
         function onHideVpn()             { vpn.open_ = false }
         function onVpnConnect()          { if (VpnService.state === "off") VpnService.toggle() }
         function onVpnDisconnect()       { if (VpnService.state === "on" || VpnService.state === "degraded") VpnService.toggle() }
+        function onVpnForceStop()        { VpnService.forceStop() }
     }
 
     IpcHandler {
@@ -151,6 +152,7 @@ ShellRoot {
         function hide(): string       { Ipc.hideVpn();       return "ok" }
         function connect(): string    { Ipc.vpnConnect();    return "ok" }
         function disconnect(): string { Ipc.vpnDisconnect(); return "ok" }
+        function forceStop(): string  { Ipc.vpnForceStop(); return "ok" }
         function status(): string {
             return JSON.stringify({
                 state:       VpnService.state,
