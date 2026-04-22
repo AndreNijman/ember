@@ -1,0 +1,4 @@
+module Theme
+singleton Tokens 1.0 Tokens.qml
+singleton Theme  1.0 Theme.qml
+singleton Fonts  1.0 Fonts.qml

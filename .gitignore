@@ -1,0 +1,7 @@
+/build/
+*.log
+*.tmp
+/aqs
+.DS_Store
+*.swp
+/go.sum.backup

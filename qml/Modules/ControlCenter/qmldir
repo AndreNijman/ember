@@ -1,0 +1,4 @@
+module ControlCenter
+ControlCenter 1.0 ControlCenter.qml
+ToggleTile    1.0 ToggleTile.qml
+AudioRow      1.0 AudioRow.qml

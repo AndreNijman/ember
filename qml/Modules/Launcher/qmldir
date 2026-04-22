@@ -1,0 +1,4 @@
+module Launcher
+Launcher  1.0 Launcher.qml
+ResultRow 1.0 ResultRow.qml
+CalcStrip 1.0 CalcStrip.qml

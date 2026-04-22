@@ -1,0 +1,3 @@
+module OSD
+OsdHost 1.0 OsdHost.qml
+OsdBar  1.0 OsdBar.qml

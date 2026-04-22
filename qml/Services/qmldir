@@ -1,0 +1,16 @@
+module Services
+singleton HyprlandService    1.0 HyprlandService.qml
+singleton ClockService       1.0 ClockService.qml
+singleton PowerService       1.0 PowerService.qml
+singleton AudioService       1.0 AudioService.qml
+singleton BrightnessService  1.0 BrightnessService.qml
+singleton NetworkService     1.0 NetworkService.qml
+singleton BluetoothService   1.0 BluetoothService.qml
+singleton NotifService       1.0 NotifService.qml
+singleton IdleService        1.0 IdleService.qml
+singleton LockService        1.0 LockService.qml
+singleton WallpaperService   1.0 WallpaperService.qml
+singleton AppService         1.0 AppService.qml
+singleton CalcService        1.0 CalcService.qml
+singleton TrayService        1.0 TrayService.qml
+singleton Ipc                1.0 Ipc.qml

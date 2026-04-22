@@ -1,0 +1,3 @@
+module Lock
+Lock      1.0 Lock.qml
+AuthField 1.0 AuthField.qml

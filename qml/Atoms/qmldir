@@ -1,0 +1,13 @@
+module Atoms
+Hairline 1.0 Hairline.qml
+Surface  1.0 Surface.qml
+Glyph    1.0 Glyph.qml
+Cell     1.0 Cell.qml
+Pip      1.0 Pip.qml
+Strip    1.0 Strip.qml
+Bar      1.0 Bar.qml
+Slider   1.0 Slider.qml
+Segments 1.0 Segments.qml
+Toggle   1.0 Toggle.qml
+Field    1.0 Field.qml
+Row      1.0 Row.qml
