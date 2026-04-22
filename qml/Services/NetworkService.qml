@@ -14,11 +14,18 @@ QtObject {
     property bool online: false
     property string vpnIface: ""
 
+    property var wifiList: []
+    property bool scanning: false
+
     signal toggled(bool on)
 
     function refresh() { _dev.running = true }
+    function scanWifi() { root.scanning = true; _scan.running = true }
     function connectWifi(ssid, password) {
-        _conn.command = ["nmcli", "dev", "wifi", "connect", ssid, "password", password]
+        if (password && password.length > 0)
+            _conn.command = ["nmcli", "dev", "wifi", "connect", ssid, "password", password]
+        else
+            _conn.command = ["nmcli", "dev", "wifi", "connect", ssid]
         _conn.running = true
     }
 
@@ -28,13 +35,19 @@ QtObject {
             onStreamFinished: root._parseDev(this.text || "")
         }
     }
+    property Process _scan: Process {
+        command: ["nmcli", "-t", "-f", "SSID,SECURITY,SIGNAL,IN-USE", "dev", "wifi", "list", "--rescan", "yes"]
+        stdout: StdioCollector {
+            onStreamFinished: { root._parseWifi(this.text || ""); root.scanning = false }
+        }
+    }
     property Process _conn: Process { command: ["true"] }
     property Timer _timer: Timer {
         interval: 4000; repeat: true; running: true
         onTriggered: root.refresh()
     }
 
-    Component.onCompleted: refresh()
+    Component.onCompleted: { refresh(); scanWifi() }
 
     function _parseDev(out) {
         var lines = out.split("\n")
@@ -63,5 +76,29 @@ QtObject {
             root.online = false
             root.strength = 0
         }
+    }
+
+    function _parseWifi(out) {
+        var lines = out.split("\n")
+        var nets = []
+        var seen = {}
+        for (var i = 0; i < lines.length; i++) {
+            var cols = lines[i].split(":")
+            if (cols.length < 4 || !cols[0]) continue
+            if (seen[cols[0]]) continue
+            seen[cols[0]] = true
+            nets.push({
+                ssid: cols[0],
+                security: cols[1] || "",
+                signal: parseInt(cols[2]) || 0,
+                active: cols[3] === "*"
+            })
+        }
+        nets.sort(function(a, b) {
+            if (a.active && !b.active) return -1
+            if (!a.active && b.active) return 1
+            return b.signal - a.signal
+        })
+        root.wifiList = nets
     }
 }

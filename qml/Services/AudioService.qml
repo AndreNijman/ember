@@ -18,19 +18,22 @@ QtObject {
 
     property var sinks: []
     property var sources: []
+    property var streams: []
 
     signal volumeSet(real value)
 
     function _rebuildLists() {
-        var s = [], src = []
+        var s = [], src = [], str = []
         for (var i = 0; i < Pipewire.nodes.length; i++) {
             var n = Pipewire.nodes[i]
-            if (!n || !n.audio || n.isStream) continue
+            if (!n || !n.audio) continue
+            if (n.isStream) { str.push(n); continue }
             if (n.isSink) s.push(n)
             else src.push(n)
         }
         sinks = s
         sources = src
+        streams = str
     }
 
     onSinkChanged: _rebuildLists()

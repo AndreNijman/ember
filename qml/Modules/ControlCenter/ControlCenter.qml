@@ -7,8 +7,6 @@ import "../../Services"
 
 PanelWindow {
     id: root
-    //  ControlCenter: 380xauto (cap 720) popup top-right under bar.
-    //  Panels: Quick toggles, Audio, Brightness, Power.
     property bool open_: false
     visible: open_
 
@@ -20,6 +18,8 @@ PanelWindow {
     anchors { top: true; right: true }
     margins { top: 32; right: 8 }
     exclusiveZone: 0
+
+    property string expandedPanel: ""
 
     Column {
         id: column
@@ -44,11 +44,37 @@ PanelWindow {
             rowSpacing: 0
             columnSpacing: 0
             width: parent.width
-            ToggleTile { label: "wifi";      on: NetworkService.online; width: parent.width / 2 }
-            ToggleTile { label: "bluetooth"; on: BluetoothService.powered; width: parent.width / 2; onToggled: (v) => BluetoothService.setPowered(v) }
-            ToggleTile { label: "dnd";       on: NotifService.dnd; width: parent.width / 2;       onToggled: (v) => NotifService.setDnd(v) }
-            ToggleTile { label: "idle hold"; on: IdleService.inhibited; width: parent.width / 2;  onToggled: (v) => IdleService.setInhibited(v) }
+            ToggleTile {
+                label: "wifi"; on: NetworkService.online; width: parent.width / 2
+                expandable: true
+                expanded: root.expandedPanel === "wifi"
+                onExpandClicked: root.expandedPanel = root.expandedPanel === "wifi" ? "" : "wifi"
+            }
+            ToggleTile {
+                label: "bluetooth"; on: BluetoothService.powered; width: parent.width / 2
+                expandable: true
+                expanded: root.expandedPanel === "bt"
+                onToggled: (v) => BluetoothService.setPowered(v)
+                onExpandClicked: root.expandedPanel = root.expandedPanel === "bt" ? "" : "bt"
+            }
+            ToggleTile {
+                label: "dnd"; on: NotifService.dnd; width: parent.width / 2
+                onToggled: (v) => NotifService.setDnd(v)
+            }
+            ToggleTile {
+                label: "idle hold"; on: IdleService.inhibited; width: parent.width / 2
+                onToggled: (v) => IdleService.setInhibited(v)
+            }
         }
+        WifiPanel {
+            width: parent.width
+            visible: root.expandedPanel === "wifi"
+        }
+        BluetoothPanel {
+            width: parent.width
+            visible: root.expandedPanel === "bt"
+        }
+        Atoms.Hairline { width: parent.width }
         AudioOutputPanel { width: parent.width }
         Atoms.Hairline { width: parent.width }
         AudioInputPanel { width: parent.width }
@@ -73,6 +99,7 @@ PanelWindow {
                 }
             }
         }
+        Atoms.Hairline { width: parent.width }
         Item {
             width: parent.width
             height: Theme.rowH
@@ -87,18 +114,34 @@ PanelWindow {
                     color: Theme.ink8
                     font.family: Theme.fontUi
                     font.pixelSize: Theme.tsm
+                    font.features: {"tnum": 1}
                 }
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
-                    text: PowerService.charging ? "charging" : (PowerService.onBattery ? "on battery" : "AC")
+                    text: {
+                        if (PowerService.charging) return "charging"
+                        if (PowerService.onBattery) {
+                            var sec = PowerService.timeSec
+                            if (sec > 0) {
+                                var h = Math.floor(sec / 3600)
+                                var m = Math.floor((sec % 3600) / 60)
+                                return h + "h " + m + "m remaining"
+                            }
+                            return "on battery"
+                        }
+                        return "AC"
+                    }
                     color: Theme.ink5
                     font.family: Theme.fontUi
                     font.pixelSize: Theme.txs
+                    font.features: {"tnum": 1}
                 }
             }
         }
         PowerProfileRow { width: parent.width }
-        PowerRow        { width: parent.width }
+        Atoms.Hairline { width: parent.width }
+        MediaTile { width: parent.width }
+        Atoms.Hairline { width: parent.width; visible: MprisService.hasPlayer }
+        PowerRow { width: parent.width }
     }
-
 }
