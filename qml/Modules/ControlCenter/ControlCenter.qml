@@ -15,11 +15,18 @@ PanelWindow {
     color: Theme.ink1
     WlrLayershell.namespace: "aqs-control"
     WlrLayershell.layer: WlrLayer.Overlay
+    WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
     anchors { top: true; right: true }
     margins { top: 32; right: 8 }
     exclusiveZone: 0
 
     property string expandedPanel: ""
+
+    onVisibleChanged: if (visible) _focus.forceActiveFocus()
+    Item {
+        id: _focus; focus: true
+        Keys.onEscapePressed: (event) => { root.open_ = false; event.accepted = true }
+    }
 
     Column {
         id: column
@@ -37,6 +44,20 @@ PanelWindow {
                 color: Theme.ink8
                 font.family: Theme.fontUi
                 font.pixelSize: Theme.tsm
+            }
+            Text {
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.right: parent.right
+                anchors.rightMargin: Theme.s3
+                text: "×"
+                color: Theme.ink5
+                font.family: Theme.fontUi
+                font.pixelSize: Theme.tmd
+                MouseArea {
+                    anchors.fill: parent; anchors.margins: -Theme.s1
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: root.open_ = false
+                }
             }
         }
         Grid {

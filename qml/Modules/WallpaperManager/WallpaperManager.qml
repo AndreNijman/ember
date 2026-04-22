@@ -90,6 +90,11 @@ PanelWindow {
                                 height: width * 0.62
                                 path: modelData.path
                                 active: root.selectedPath === modelData.path
+                                isCurrentWallpaper: {
+                                    var ws = String(WallpaperService.currentWorkspace)
+                                    var assigned = WallpaperService.mapping[ws] || WallpaperService.mapping["all"] || ""
+                                    return assigned === modelData.path
+                                }
                                 onPicked: root.selectedPath = modelData.path
                             }
                         }

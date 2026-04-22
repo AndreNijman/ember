@@ -5,6 +5,9 @@ import "../../Theme"
 import "../../Atoms" as Atoms
 import "../../Services"
 
+// Multi-monitor: bar renders on every output (via Variants in shell.qml).
+// Status cluster (right) shows on all outputs. MPRIS media and notifications
+// are singleton PanelWindows, so they appear once on the primary output.
 PanelWindow {
     id: root
     visible: !LockService.locked

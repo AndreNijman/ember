@@ -1,7 +1,9 @@
 import QtQuick
+import QtQuick.Controls
 import Quickshell
 import Quickshell.Wayland
 import "../../Theme"
+import "../../Atoms" as Atoms
 
 PanelWindow {
     id: root
@@ -88,12 +90,36 @@ PanelWindow {
         ] },
     ]
 
+    property string searchQuery: ""
+    onOpen_Changed: if (!open_) searchQuery = ""
+
+    function filteredSections() {
+        if (!searchQuery || searchQuery.length === 0) return sections
+        var q = searchQuery.toLowerCase()
+        var out = []
+        for (var i = 0; i < sections.length; i++) {
+            var s = sections[i]
+            var filtered = []
+            for (var j = 0; j < s.binds.length; j++) {
+                var b = s.binds[j]
+                if (b.k.toLowerCase().indexOf(q) >= 0 || b.d.toLowerCase().indexOf(q) >= 0)
+                    filtered.push(b)
+            }
+            if (filtered.length > 0)
+                out.push({ title: s.title, binds: filtered })
+        }
+        return out
+    }
+
     Item {
         anchors.fill: parent
         focus: root.open_
         Keys.onEscapePressed: (event) => { root.open_ = false; event.accepted = true }
         Keys.onPressed: (event) => {
-            if (event.key === Qt.Key_Slash || event.key === Qt.Key_Q) {
+            if (event.key === Qt.Key_Slash) {
+                searchInput.forceActiveFocus()
+                event.accepted = true
+            } else if (event.key === Qt.Key_Q && !searchInput.activeFocus) {
                 root.open_ = false
                 event.accepted = true
             }
@@ -119,16 +145,33 @@ PanelWindow {
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.right: parent.right
                     anchors.rightMargin: Theme.s3
-                    text: "⎋ close"
+                    text: "×"
                     color: Theme.ink5
                     font.family: Theme.fontUi
-                    font.pixelSize: Theme.txs
+                    font.pixelSize: Theme.tmd
+                    MouseArea {
+                        anchors.fill: parent; anchors.margins: -Theme.s1
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: root.open_ = false
+                    }
+                }
+            }
+
+            Atoms.Field {
+                id: searchInput
+                width: parent.width
+                placeholderText: "/ search keybinds"
+                onTextChanged: root.searchQuery = text
+                Keys.onEscapePressed: (event) => {
+                    text = ""
+                    parent.parent.forceActiveFocus()
+                    event.accepted = true
                 }
             }
 
             Rectangle {
                 width: parent.width
-                height: root.height - Theme.rowH
+                height: root.height - Theme.rowH - searchInput.height
                 color: Theme.ink1
                 antialiasing: false
 
@@ -148,7 +191,7 @@ PanelWindow {
                         rowSpacing: Theme.s4
 
                         Repeater {
-                            model: root.sections
+                            model: root.filteredSections()
                             delegate: Column {
                                 required property var modelData
                                 width: (grid.width - Theme.s4) / 2

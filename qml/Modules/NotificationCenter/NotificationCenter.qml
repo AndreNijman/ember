@@ -14,9 +14,16 @@ PanelWindow {
     color: Theme.ink1
     WlrLayershell.namespace: "aqs-notifications"
     WlrLayershell.layer: WlrLayer.Overlay
+    WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
     anchors { top: true; right: true }
     margins { top: 32; right: 8 }
     exclusiveZone: 0
+
+    onVisibleChanged: if (visible) _focus.forceActiveFocus()
+    Item {
+        id: _focus; focus: true
+        Keys.onEscapePressed: (event) => { root.open_ = false; event.accepted = true }
+    }
 
     Column {
         anchors.fill: parent
@@ -27,32 +34,42 @@ PanelWindow {
             height: Theme.rowH
             color: Theme.ink2
             antialiasing: false
-            Row {
-                anchors.fill: parent
-                anchors.leftMargin: Theme.s3
-                anchors.rightMargin: Theme.s3
-                Text {
-                    text: "notifications"
-                    color: Theme.ink8
-                    font.family: Theme.fontUi
-                    font.pixelSize: Theme.tsm
-                    anchors.verticalCenter: parent.verticalCenter
-                }
-            }
             Text {
-                visible: NotifService.items.length > 0
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.left: parent.left
+                anchors.leftMargin: Theme.s3
+                text: "notifications"
+                color: Theme.ink8
+                font.family: Theme.fontUi
+                font.pixelSize: Theme.tsm
+            }
+            Row {
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.right: parent.right
                 anchors.rightMargin: Theme.s3
-                text: "clear all"
-                color: Theme.ink5
-                font.family: Theme.fontUi
-                font.pixelSize: Theme.txs
-                MouseArea {
-                    anchors.fill: parent
-                    anchors.margins: -Theme.s1
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: NotifService.clearAll()
+                spacing: Theme.s3
+                Text {
+                    visible: NotifService.items.length > 0
+                    text: "clear all"
+                    color: Theme.ink5
+                    font.family: Theme.fontUi
+                    font.pixelSize: Theme.txs
+                    MouseArea {
+                        anchors.fill: parent; anchors.margins: -Theme.s1
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: NotifService.clearAll()
+                    }
+                }
+                Text {
+                    text: "×"
+                    color: Theme.ink5
+                    font.family: Theme.fontUi
+                    font.pixelSize: Theme.tmd
+                    MouseArea {
+                        anchors.fill: parent; anchors.margins: -Theme.s1
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: root.open_ = false
+                    }
                 }
             }
         }

@@ -16,9 +16,16 @@ PanelWindow {
     color: Theme.ink1
     WlrLayershell.namespace: "aqs-calendar"
     WlrLayershell.layer: WlrLayer.Overlay
+    WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
     anchors { top: true; right: true }
     margins { top: 32; right: 8 }
     exclusiveZone: 0
+
+    onVisibleChanged: if (visible) _focus.forceActiveFocus()
+    Item {
+        id: _focus; focus: true
+        Keys.onEscapePressed: (event) => { root.open_ = false; event.accepted = true }
+    }
 
     property date viewDate: new Date()
     property int viewMonth: viewDate.getMonth()
