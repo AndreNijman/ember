@@ -8,6 +8,7 @@ import "Modules/ControlCenter"
 import "Modules/OSD"
 import "Modules/Lock"
 import "Modules/WallpaperManager"
+import "Modules/Keybinds"
 import "Services"
 
 ShellRoot {
@@ -27,6 +28,7 @@ ShellRoot {
     OsdHost            { id: osd      }
     Lock               { id: lock     }
     WallpaperManager   { id: wallpaper }
+    Keybinds           { id: keybinds }
 
     Connections {
         target: Ipc
@@ -44,6 +46,9 @@ ShellRoot {
         function onOsdBrightness(v)      { BrightnessService.set(v); osd.showBrightness(v) }
         function onWorkspaceFocus(id)    { HyprlandService.focusWorkspace(id) }
         function onSetWallpaper(out, p)  { WallpaperService.set(out, p) }
+        function onToggleKeybinds()      { keybinds.open_ = !keybinds.open_ }
+        function onShowKeybinds()        { keybinds.open_ = true }
+        function onHideKeybinds()        { keybinds.open_ = false }
     }
 
     IpcHandler {
@@ -109,6 +114,12 @@ ShellRoot {
             return "ok"
         }
         function micmute(): string { AudioService.toggleMicMute(); return "ok" }
+    }
+    IpcHandler {
+        target: "keybinds"
+        function toggle(): string { Ipc.toggleKeybinds(); return "ok" }
+        function show(): string   { Ipc.showKeybinds();   return "ok" }
+        function hide(): string   { Ipc.hideKeybinds();   return "ok" }
     }
     IpcHandler {
         target: "brightness"

@@ -96,7 +96,7 @@ func forwardQsIPC(target, action string, rest []string) error {
 	if err != nil {
 		return err
 	}
-	cmd := []string{"qs", "ipc", "--pid", strconv.Itoa(pid), "call", target, action}
+	cmd := []string{"qs", "ipc", "--pid", strconv.Itoa(pid), "call", "--", target, action}
 	cmd = append(cmd, rest...)
 	out, err := exec.Command(cmd[0], cmd[1:]...).CombinedOutput()
 	if len(out) > 0 {

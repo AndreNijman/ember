@@ -31,6 +31,10 @@ QtObject {
     signal barHide()
     signal barToggle()
 
+    signal toggleKeybinds()
+    signal showKeybinds()
+    signal hideKeybinds()
+
     function status() {
         return JSON.stringify({
             version: { major: 0, minor: 1, patch: 0 },
