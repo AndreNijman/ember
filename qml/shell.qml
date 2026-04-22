@@ -31,6 +31,13 @@ ShellRoot {
     Keybinds           { id: keybinds }
 
     Connections {
+        target: HyprlandService
+        function onFocusedWorkspaceIdChanged() {
+            WallpaperService.onWorkspaceChanged(HyprlandService.focusedWorkspaceId)
+        }
+    }
+
+    Connections {
         target: Ipc
         function onToggleLauncher()      { launcher.open_ = !launcher.open_ }
         function onShowLauncher()        { launcher.open_ = true }
@@ -49,6 +56,9 @@ ShellRoot {
         function onToggleKeybinds()      { keybinds.open_ = !keybinds.open_ }
         function onShowKeybinds()        { keybinds.open_ = true }
         function onHideKeybinds()        { keybinds.open_ = false }
+        function onToggleWallpaper()     { wallpaper.open_ = !wallpaper.open_ }
+        function onShowWallpaper()       { wallpaper.open_ = true }
+        function onHideWallpaper()       { wallpaper.open_ = false }
     }
 
     IpcHandler {
@@ -92,8 +102,14 @@ ShellRoot {
     }
     IpcHandler {
         target: "wallpaper"
-        function set(output: string, path: string): string {
-            Ipc.setWallpaper(output, path); return "ok"
+        function toggle(): string { Ipc.toggleWallpaper(); return "ok" }
+        function show(): string   { Ipc.showWallpaper();   return "ok" }
+        function hide(): string   { Ipc.hideWallpaper();   return "ok" }
+        function setForWorkspace(ws: string, path: string): string {
+            WallpaperService.setForWorkspace(Number(ws), path); return "ok"
+        }
+        function setAll(path: string): string {
+            WallpaperService.setAll(path); return "ok"
         }
     }
     IpcHandler {
