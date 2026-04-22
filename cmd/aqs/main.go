@@ -1,4 +1,4 @@
-// Command aqs is the IPC client + PAM helper for the arch-quickshell-shell.
+// Command aqs is the IPC client + PAM helper for ember.
 package main
 
 import (
@@ -24,7 +24,7 @@ import (
 	"github.com/AndreNijman/aqs/internal/socket"
 )
 
-const usage = `aqs — arch-quickshell-shell IPC client + helpers
+const usage = `aqs — ember IPC client + helpers
 
 usage:
   aqs ipc <target> <action> [args...]
@@ -115,7 +115,7 @@ func findQuickshellPID() (int, error) {
 	if err != nil {
 		return 0, fmt.Errorf("read %s: %w", pidDir, err)
 	}
-	const marker = "arch-quickshell-shell"
+	const marker = "ember/qml/shell.qml"
 	for _, e := range entries {
 		pid, err := strconv.Atoi(e.Name())
 		if err != nil {
@@ -129,7 +129,7 @@ func findQuickshellPID() (int, error) {
 			return pid, nil
 		}
 	}
-	return 0, errors.New("no running arch-quickshell-shell quickshell instance found")
+	return 0, errors.New("no running ember quickshell instance found")
 }
 
 func runPAM(args []string) error {

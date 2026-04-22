@@ -1,4 +1,4 @@
-# arch-quickshell-shell — Makefile
+# ember — Makefile
 #
 # Everything here is repo-local. No installs, no symlinks, no system
 # services, no $HOME writes outside the repo. Targets:

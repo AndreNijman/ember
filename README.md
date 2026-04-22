@@ -1,8 +1,10 @@
-# arch-quickshell-shell
+# ember
 
 A Quickshell/QML desktop shell for Hyprland on Arch Linux. Built to replace
 DMS with a sharper-edged, monochrome aesthetic: 1px hairlines, no rounded
 corners, a single amber accent, no blur or shadow.
+
+The binary is `aqs` (historical; stays for keybind compat).
 
 Status: personal daily driver, pre-release. Expect rough edges.
 
