@@ -62,5 +62,4 @@ PanelWindow {
         }
     }
 
-    Keys.onEscapePressed: (event) => { root.open_ = false; event.accepted = true }
 }
