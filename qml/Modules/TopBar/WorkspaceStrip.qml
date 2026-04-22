@@ -4,24 +4,26 @@ import "../../Services"
 
 Row {
     id: root
-    //  WorkspaceStrip renders 10 pips wired to HyprlandService. The number
-    //  of pips is fixed (1..10) to match Hyprland defaults; occupied/focus
-    //  state comes from HyprlandService.workspaces.
     spacing: 0
 
+    property var visibleIds: {
+        var ids = {}
+        var ws = HyprlandService.workspaces
+        for (var i = 0; i < ws.length; i++) {
+            if (ws[i] && ws[i].id > 0) ids[ws[i].id] = true
+        }
+        var focused = HyprlandService.focusedWorkspaceId
+        if (focused > 0) ids[focused] = true
+        return Object.keys(ids).map(Number).sort(function(a, b) { return a - b })
+    }
+
     Repeater {
-        model: 10
+        model: root.visibleIds
         delegate: WorkspacePip {
-            required property int index
-            wsId: index + 1
-            focused: HyprlandService.focusedWorkspaceId === (index + 1)
-            occupied: {
-                for (var i = 0; i < HyprlandService.workspaces.length; i++) {
-                    if (HyprlandService.workspaces[i].id === (index + 1)) return true
-                }
-                return false
-            }
-            onClicked: HyprlandService.focusWorkspace(index + 1)
+            required property var modelData
+            wsId: modelData
+            focused: HyprlandService.focusedWorkspaceId === modelData
+            onClicked: HyprlandService.focusWorkspace(modelData)
         }
     }
 }

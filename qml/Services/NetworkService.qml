@@ -12,6 +12,7 @@ QtObject {
     property int strength: 0
     property string kind: "none"  // wifi | ethernet | none
     property bool online: false
+    property string vpnIface: ""
 
     signal toggled(bool on)
 
@@ -38,15 +39,19 @@ QtObject {
     function _parseDev(out) {
         var lines = out.split("\n")
         var best = null
+        var vpn = ""
         for (var i = 0; i < lines.length; i++) {
             var cols = lines[i].split(":")
             if (cols.length < 4) continue
             if (cols[2] !== "connected") continue
-            if (cols[1] === "wifi" || cols[1] === "ethernet") {
+            if (cols[1] === "tun" || cols[1] === "wireguard") {
+                vpn = cols[0]
+            } else if (cols[1] === "wifi" || cols[1] === "ethernet") {
                 best = { type: cols[1], conn: cols[3] }
                 if (cols[1] === "wifi") break
             }
         }
+        root.vpnIface = vpn
         if (best) {
             root.kind = best.type
             root.ssid = best.conn

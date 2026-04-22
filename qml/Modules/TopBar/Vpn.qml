@@ -4,17 +4,16 @@ import "../../Services"
 
 Item {
     id: root
+    visible: NetworkService.vpnIface.length > 0
     implicitHeight: Theme.barH
     implicitWidth: label.implicitWidth + Theme.s3 * 2
 
     Text {
         id: label
         anchors.centerIn: parent
-        text: AudioService.muted ? "mute" : (Math.round(AudioService.volume * 100) + "%")
-        color: AudioService.muted ? Theme.ink5 : Theme.ink7
+        text: "vpn · " + NetworkService.vpnIface
+        color: Theme.ok
         font.family: Theme.fontUi
         font.pixelSize: Theme.tsm
-        font.features: {"tnum": 1}
     }
-    MouseArea { anchors.fill: parent; onClicked: AudioService.toggleMute() }
 }

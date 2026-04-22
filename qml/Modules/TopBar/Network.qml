@@ -4,8 +4,6 @@ import "../../Services"
 
 Item {
     id: root
-    //  Network composite: short status string. "WIFI" or "ETH" or "OFF".
-    //  The ControlCenter.Network panel carries the SSID + signal detail.
     implicitHeight: Theme.barH
     implicitWidth: label.implicitWidth + Theme.s3 * 2
 
@@ -13,10 +11,14 @@ Item {
         id: label
         anchors.centerIn: parent
         text: {
-            if (!NetworkService.online) return "off"
-            if (NetworkService.kind === "wifi") return "wifi"
+            if (!NetworkService.online) {
+                if (NetworkService.kind === "none") return "wifi · —"
+                return "wifi · off"
+            }
+            if (NetworkService.kind === "wifi")
+                return "wifi · " + (NetworkService.ssid || "—")
             if (NetworkService.kind === "ethernet") return "eth"
-            return "--"
+            return "—"
         }
         color: NetworkService.online ? Theme.ink7 : Theme.ink5
         font.family: Theme.fontUi
