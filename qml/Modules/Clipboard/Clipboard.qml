@@ -21,6 +21,8 @@ PanelWindow {
     exclusiveZone: 0
 
     property var entries: []
+    property var _thumbs: ({})
+    property int _thumbGen: 0
 
     onOpen_Changed: {
         if (open_) {
@@ -37,6 +39,7 @@ PanelWindow {
             onStreamFinished: {
                 var lines = (this.text || "").split("\n")
                 var out = []
+                var binaryIds = []
                 for (var i = 0; i < lines.length; i++) {
                     var line = lines[i]
                     var tab = line.indexOf("\t")
@@ -49,8 +52,41 @@ PanelWindow {
                         text: isBinary ? content : content.substring(0, 200),
                         isBinary: isBinary
                     })
+                    if (isBinary) binaryIds.push(id)
                 }
                 root.entries = out
+                if (binaryIds.length > 0) root._decodeThumbs(binaryIds)
+            }
+        }
+    }
+
+    function _decodeThumbs(ids) {
+        var cmds = []
+        for (var i = 0; i < ids.length; i++) {
+            var p = "/tmp/aqs-clip-" + ids[i] + ".png"
+            cmds.push("cliphist decode " + ids[i] + " > " + p + " && echo " + ids[i] + ":" + p)
+        }
+        _thumbProc.command = ["sh", "-c", cmds.join("; ")]
+        _thumbProc.running = true
+    }
+
+    Process {
+        id: _thumbProc
+        command: ["true"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                var lines = (this.text || "").split("\n")
+                var m = {}
+                for (var k in root._thumbs) m[k] = root._thumbs[k]
+                for (var i = 0; i < lines.length; i++) {
+                    var sep = lines[i].indexOf(":")
+                    if (sep < 0) continue
+                    var id = lines[i].substring(0, sep)
+                    var path = lines[i].substring(sep + 1)
+                    m[id] = "file://" + path
+                }
+                root._thumbs = m
+                root._thumbGen++
             }
         }
     }
@@ -69,7 +105,7 @@ PanelWindow {
     Process {
         id: _wipe
         command: ["cliphist", "wipe"]
-        onExited: { root.entries = []; _load.running = true }
+        onExited: { root.entries = []; root._thumbs = {}; root._thumbGen++; _load.running = true }
     }
 
     function paste(clipId) {
@@ -81,6 +117,11 @@ PanelWindow {
     function remove(clipId) {
         _delete.command = ["sh", "-c", "cliphist delete-query " + clipId]
         _delete.running = true
+    }
+
+    function thumbUrl(clipId) {
+        void root._thumbGen
+        return root._thumbs[clipId] || ""
     }
 
     property var filtered: {
@@ -166,7 +207,7 @@ PanelWindow {
                 required property var modelData
                 required property int index
                 width: list.width
-                height: Math.min(entryCol.implicitHeight + Theme.s2 * 2, Theme.rowH * 3)
+                height: modelData.isBinary ? imgRow.height + Theme.s2 * 2 : Math.min(entryCol.implicitHeight + Theme.s2 * 2, Theme.rowH * 3)
                 color: list.currentIndex === index ? Qt.rgba(1, 1, 1, 0.04) : "transparent"
                 clip: true
 
@@ -178,22 +219,45 @@ PanelWindow {
                     anchors.bottom: parent.bottom
                 }
 
-                Column {
-                    id: entryCol
+                Item {
+                    id: imgRow
+                    visible: modelData.isBinary
                     anchors.left: parent.left; anchors.right: delBtn.left
                     anchors.leftMargin: Theme.s3; anchors.rightMargin: Theme.s2
                     anchors.top: parent.top; anchors.topMargin: Theme.s2
+                    height: visible ? 80 : 0
 
+                    Image {
+                        id: thumb
+                        anchors.left: parent.left
+                        anchors.top: parent.top
+                        height: 76
+                        width: height * 1.5
+                        fillMode: Image.PreserveAspectFit
+                        source: root.thumbUrl(modelData.clipId)
+                        asynchronous: true
+                        sourceSize.height: 152
+                    }
                     Text {
-                        visible: modelData.isBinary
+                        anchors.left: thumb.right
+                        anchors.leftMargin: Theme.s2
+                        anchors.verticalCenter: parent.verticalCenter
                         text: modelData.text
                         color: Theme.ink5
                         font.family: Theme.fontUi
                         font.pixelSize: Theme.txs
                         font.italic: true
                     }
+                }
+
+                Column {
+                    id: entryCol
+                    visible: !modelData.isBinary
+                    anchors.left: parent.left; anchors.right: delBtn.left
+                    anchors.leftMargin: Theme.s3; anchors.rightMargin: Theme.s2
+                    anchors.top: parent.top; anchors.topMargin: Theme.s2
+
                     Text {
-                        visible: !modelData.isBinary
                         text: modelData.text
                         color: Theme.ink7
                         font.family: Theme.fontUi
