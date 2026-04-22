@@ -21,4 +21,8 @@ Item {
         font.features: {"tnum": 1}
     }
 
+    MouseArea {
+        anchors.fill: parent
+        onClicked: Ipc.toggleCalendar()
+    }
 }
