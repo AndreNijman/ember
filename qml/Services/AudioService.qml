@@ -8,6 +8,13 @@ QtObject {
     property var sink: Pipewire.defaultAudioSink
     property var source: Pipewire.defaultAudioSource
 
+    property PwObjectTracker _sinkTracker: PwObjectTracker {
+        objects: root.sink ? [root.sink] : []
+    }
+    property PwObjectTracker _sourceTracker: PwObjectTracker {
+        objects: root.source ? [root.source] : []
+    }
+
     readonly property real volume: sink && sink.audio ? sink.audio.volume : 0.0
     readonly property bool muted:  sink && sink.audio ? sink.audio.muted  : false
     readonly property string sinkName: sink ? (sink.description || sink.name || "") : ""
