@@ -129,7 +129,11 @@ ShellRoot {
             osd.showVolume(AudioService.volume, AudioService.muted)
             return "ok"
         }
-        function micmute(): string { AudioService.toggleMicMute(); return "ok" }
+        function micmute(): string {
+            AudioService.toggleMicMute()
+            osd.showMic(AudioService.sourceMuted)
+            return "ok"
+        }
     }
     IpcHandler {
         target: "keybinds"

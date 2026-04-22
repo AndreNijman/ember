@@ -4,27 +4,40 @@ import "../../Atoms" as Atoms
 
 Item {
     id: root
-    //  OsdBar: a labeled horizontal progress used by the OSD surface.
     property string label: ""
     property real value: 0.0
     property bool muted: false
 
-    implicitHeight: Theme.rowH * 2
-    implicitWidth: 280
-
-    Column {
+    Row {
         anchors.fill: parent
-        anchors.margins: Theme.s3
-        spacing: Theme.s1
+        anchors.verticalCenter: parent.verticalCenter
+        spacing: Theme.s2
+
         Text {
+            anchors.verticalCenter: parent.verticalCenter
             text: root.muted ? (root.label + " · mute") : root.label
             color: root.muted ? Theme.ink5 : Theme.ink7
             font.family: Theme.fontUi
             font.pixelSize: Theme.txs
+            width: 72
         }
+
         Atoms.Bar {
-            width: parent.width
+            anchors.verticalCenter: parent.verticalCenter
+            width: parent.width - 72 - pct.width - Theme.s2 * 2
             value: root.muted ? 0 : root.value
+        }
+
+        Text {
+            id: pct
+            anchors.verticalCenter: parent.verticalCenter
+            text: Math.round(root.value * 100) + "%"
+            color: root.muted ? Theme.ink5 : Theme.ink8
+            font.family: Theme.fontUi
+            font.pixelSize: Theme.txs
+            font.features: {"tnum": 1}
+            horizontalAlignment: Text.AlignRight
+            width: 32
         }
     }
 }
