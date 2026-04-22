@@ -35,6 +35,7 @@ Item {
                     color: AudioService.muted ? Theme.ink5 : Theme.ink7
                     font.family: Theme.fontUi
                     font.pixelSize: Theme.t2xs
+                    font.features: {"tnum": 1}
                 }
             }
         }
@@ -43,14 +44,19 @@ Item {
             width: parent.width
             height: Theme.rowH
             Atoms.Slider {
+                id: outSlider
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.leftMargin: Theme.s3
                 anchors.rightMargin: Theme.s3
-                value: AudioService.volume
                 max_: 1.5
                 onChanged: (v) => AudioService.setVolume(v)
+            }
+            Binding {
+                target: outSlider
+                property: "value"
+                value: AudioService.volume
             }
         }
 

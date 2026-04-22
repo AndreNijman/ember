@@ -43,16 +43,23 @@ Item {
             color: root.isMuted ? Theme.ink5 : Theme.ink6
             font.family: Theme.fontUi
             font.pixelSize: Theme.t2xs
+            font.features: {"tnum": 1}
             width: 32
         }
 
         Atoms.Slider {
+            id: rowSlider
             width: parent.width - x
             anchors.verticalCenter: parent.verticalCenter
-            value: root.vol
             max_: 1.5
             onChanged: (v) => AudioService.setNodeVolume(root.node, v)
         }
+    }
+
+    Binding {
+        target: rowSlider
+        property: "value"
+        value: root.vol
     }
 
     MouseArea {

@@ -17,7 +17,7 @@ Row {
                 id: ico
                 anchors.centerIn: parent
                 width: 16; height: 16
-                source: modelData.icon ? "image://icon/" + modelData.icon : ""
+                source: modelData.icon || ""
                 sourceSize: Qt.size(16, 16)
                 visible: status === Image.Ready
             }
@@ -28,6 +28,16 @@ Row {
                 color: Theme.ink6
                 font.family: Theme.fontUi
                 font.pixelSize: Theme.t2xs
+            }
+            MouseArea {
+                anchors.fill: parent
+                acceptedButtons: Qt.LeftButton | Qt.RightButton
+                onClicked: (mouse) => {
+                    if (mouse.button === Qt.LeftButton)
+                        modelData.activate()
+                    else if (mouse.button === Qt.RightButton && modelData.hasMenu)
+                        modelData.menu.open()
+                }
             }
         }
     }
