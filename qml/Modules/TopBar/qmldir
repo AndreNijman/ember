@@ -9,3 +9,4 @@ Clock           1.0 Clock.qml
 Battery         1.0 Battery.qml
 Volume          1.0 Volume.qml
 Network         1.0 Network.qml
+Vpn             1.0 Vpn.qml

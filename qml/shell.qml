@@ -9,6 +9,7 @@ import "Modules/OSD"
 import "Modules/Lock"
 import "Modules/WallpaperManager"
 import "Modules/Keybinds"
+import "Modules/VpnConnector"
 import "Services"
 
 ShellRoot {
@@ -29,6 +30,7 @@ ShellRoot {
     Lock               { id: lock     }
     WallpaperManager   { id: wallpaper }
     Keybinds           { id: keybinds }
+    VpnConnector       { id: vpn }
 
     Connections {
         target: HyprlandService
@@ -59,6 +61,11 @@ ShellRoot {
         function onToggleWallpaper()     { wallpaper.open_ = !wallpaper.open_ }
         function onShowWallpaper()       { wallpaper.open_ = true }
         function onHideWallpaper()       { wallpaper.open_ = false }
+        function onToggleVpn()           { vpn.open_ = !vpn.open_ }
+        function onShowVpn()             { vpn.open_ = true }
+        function onHideVpn()             { vpn.open_ = false }
+        function onVpnConnect()          { if (VpnService.state === "off") VpnService.toggle() }
+        function onVpnDisconnect()       { if (VpnService.state === "on" || VpnService.state === "degraded") VpnService.toggle() }
     }
 
     IpcHandler {
@@ -136,6 +143,24 @@ ShellRoot {
         function toggle(): string { Ipc.toggleKeybinds(); return "ok" }
         function show(): string   { Ipc.showKeybinds();   return "ok" }
         function hide(): string   { Ipc.hideKeybinds();   return "ok" }
+    }
+    IpcHandler {
+        target: "vpn"
+        function toggle(): string     { Ipc.toggleVpn();     return "ok" }
+        function show(): string       { Ipc.showVpn();       return "ok" }
+        function hide(): string       { Ipc.hideVpn();       return "ok" }
+        function connect(): string    { Ipc.vpnConnect();    return "ok" }
+        function disconnect(): string { Ipc.vpnDisconnect(); return "ok" }
+        function status(): string {
+            return JSON.stringify({
+                state:       VpnService.state,
+                egressIp:    VpnService.egressIp,
+                latencyMs:   VpnService.latencyMs,
+                rxRate:      VpnService.rxRate,
+                txRate:      VpnService.txRate,
+                vpsIp:       VpnService.vpsIp
+            })
+        }
     }
     IpcHandler {
         target: "brightness"

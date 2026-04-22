@@ -44,6 +44,7 @@ PanelWindow {
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
         spacing: Theme.s2
+        Vpn { onClicked: Ipc.toggleVpn() }
         Network {}
         Volume {}
         Battery {}

@@ -39,6 +39,12 @@ QtObject {
     signal showWallpaper()
     signal hideWallpaper()
 
+    signal toggleVpn()
+    signal showVpn()
+    signal hideVpn()
+    signal vpnConnect()
+    signal vpnDisconnect()
+
     function status() {
         return JSON.stringify({
             version: { major: 0, minor: 1, patch: 0 },
