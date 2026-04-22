@@ -24,6 +24,7 @@ ShellRoot {
 
     Launcher           { id: launcher }
     NotificationCenter { id: notif    }
+    ToastHost          { id: toasts  }
     ControlCenter      { id: control  }
     OsdHost            { id: osd      }
     Lock               { id: lock     }

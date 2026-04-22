@@ -6,8 +6,6 @@ import "../../Services"
 
 PanelWindow {
     id: root
-    //  NotificationCenter: 380x580 popup anchored top-right under the bar.
-    //  Grouped list of notifications from NotifService.items.
     property bool open_: false
     visible: open_
 
@@ -33,7 +31,6 @@ PanelWindow {
                 anchors.fill: parent
                 anchors.leftMargin: Theme.s3
                 anchors.rightMargin: Theme.s3
-                spacing: Theme.s2
                 Text {
                     text: "notifications"
                     color: Theme.ink8
@@ -41,25 +38,84 @@ PanelWindow {
                     font.pixelSize: Theme.tsm
                     anchors.verticalCenter: parent.verticalCenter
                 }
-                Item { width: 1; height: 1 }
+            }
+            Text {
+                visible: NotifService.items.length > 0
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.right: parent.right
+                anchors.rightMargin: Theme.s3
+                text: "clear all"
+                color: Theme.ink5
+                font.family: Theme.fontUi
+                font.pixelSize: Theme.txs
+                MouseArea {
+                    anchors.fill: parent
+                    anchors.margins: -Theme.s1
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: NotifService.clearAll()
+                }
             }
         }
+
         ListView {
             id: feed
             width: parent.width
             height: parent.height - Theme.rowH
             clip: true
-            model: NotifService.items
-            delegate: Notification {
+            model: NotifService.grouped()
+
+            delegate: Loader {
                 required property var modelData
+                required property int index
                 width: feed.width
-                appName: modelData.appName || ""
-                title: modelData.summary || ""
-                body: modelData.body || ""
-                urgent: (modelData.urgency || 0) >= 2
-                onDismissed: NotifService.dismiss(modelData.id)
+                sourceComponent: modelData.type === "group" ? groupComp : singleComp
+
+                Component {
+                    id: groupComp
+                    Group {
+                        width: feed.width
+                        appName: modelData.appName || ""
+                        notifications: modelData.items || []
+                    }
+                }
+                Component {
+                    id: singleComp
+                    Notification {
+                        width: feed.width
+                        appName: modelData.notification ? (modelData.notification.appName || "") : ""
+                        title: modelData.notification ? (modelData.notification.summary || "") : ""
+                        body: modelData.notification ? (modelData.notification.body || "") : ""
+                        urgent: modelData.notification ? ((modelData.notification.urgency || 0) >= 2) : false
+                        actions: modelData.notification && modelData.notification.actions ? modelData.notification.actions : []
+                        onDismissed: {
+                            if (modelData.notification)
+                                NotifService.dismiss(modelData.notification.id)
+                        }
+                        onActivated: {
+                            if (modelData.notification)
+                                NotifService.invoke(modelData.notification, "default")
+                        }
+                        onActionInvoked: (actionId) => {
+                            if (modelData.notification)
+                                NotifService.invoke(modelData.notification, actionId)
+                        }
+                    }
+                }
+            }
+        }
+
+        Rectangle {
+            visible: NotifService.items.length === 0
+            width: parent.width
+            height: parent.height - Theme.rowH
+            color: Theme.ink1
+            Text {
+                anchors.centerIn: parent
+                text: "no notifications"
+                color: Theme.ink5
+                font.family: Theme.fontUi
+                font.pixelSize: Theme.tsm
             }
         }
     }
-
 }
