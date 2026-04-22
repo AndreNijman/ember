@@ -20,6 +20,8 @@ QtObject {
         _set.command = ["brightnessctl", "s", Math.round(clamped * 100) + "%"]
         _set.running = true
     }
+    function increment(pct) { set(value + pct / 100.0) }
+    function decrement(pct) { set(value - pct / 100.0) }
 
     property Process _get: Process {
         command: ["brightnessctl", "-m"]

@@ -4,7 +4,7 @@ import Quickshell.Wayland
 import "../../Theme"
 import "../../Services"
 
-PopupWindow {
+PanelWindow {
     id: root
     //  OsdHost: 280px-wide popup centred-bottom. Shows one OsdBar at a time.
     property string kind: ""  // "volume" | "brightness" | "caps"
@@ -17,7 +17,10 @@ PopupWindow {
     implicitHeight: bar.implicitHeight
     color: Theme.ink1
     WlrLayershell.namespace: "aqs-osd"
-    anchor.window: null
+    WlrLayershell.layer: WlrLayer.Overlay
+    anchors { bottom: true }
+    margins { bottom: 80 }
+    exclusiveZone: 0
 
     OsdBar {
         id: bar

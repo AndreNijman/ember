@@ -9,8 +9,11 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"os/signal"
 	"os/user"
+	"path/filepath"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -61,11 +64,11 @@ func run(args []string) error {
 	case "doctor":
 		return runDoctor()
 	case "restart":
-		return ipc.RunClient("shell", "restart", nil)
+		return forwardQsIPC("shell", "restart", nil)
 	case "keybinds":
-		return ipc.RunClient("shell", "keybinds", nil)
+		return forwardQsIPC("shell", "keybinds", nil)
 	case "wallpaper":
-		return ipc.RunClient("wallpaper", "set", args[1:])
+		return forwardQsIPC("wallpaper", "set", args[1:])
 	case "help", "--help", "-h":
 		fmt.Print(usage)
 		return nil
@@ -78,14 +81,55 @@ func runIPC(args []string) error {
 	if len(args) == 0 {
 		return errors.New("aqs ipc: missing target")
 	}
+	var target, action string
+	var rest []string
 	if len(args) == 1 {
-		// aqs ipc status -> shell status shortcut
-		return ipc.RunClient("shell", args[0], nil)
+		target, action = "shell", args[0]
+	} else {
+		target, action, rest = args[0], args[1], args[2:]
 	}
-	target := args[0]
-	action := args[1]
-	rest := args[2:]
-	return ipc.RunClient(target, action, rest)
+	return forwardQsIPC(target, action, rest)
+}
+
+func forwardQsIPC(target, action string, rest []string) error {
+	pid, err := findQuickshellPID()
+	if err != nil {
+		return err
+	}
+	cmd := []string{"qs", "ipc", "--pid", strconv.Itoa(pid), "call", target, action}
+	cmd = append(cmd, rest...)
+	out, err := exec.Command(cmd[0], cmd[1:]...).CombinedOutput()
+	if len(out) > 0 {
+		os.Stdout.Write(out)
+	}
+	return err
+}
+
+func findQuickshellPID() (int, error) {
+	rt := os.Getenv("XDG_RUNTIME_DIR")
+	if rt == "" {
+		return 0, errors.New("XDG_RUNTIME_DIR unset")
+	}
+	pidDir := filepath.Join(rt, "quickshell", "by-pid")
+	entries, err := os.ReadDir(pidDir)
+	if err != nil {
+		return 0, fmt.Errorf("read %s: %w", pidDir, err)
+	}
+	const marker = "arch-quickshell-shell"
+	for _, e := range entries {
+		pid, err := strconv.Atoi(e.Name())
+		if err != nil {
+			continue
+		}
+		cmdline, err := os.ReadFile(fmt.Sprintf("/proc/%d/cmdline", pid))
+		if err != nil {
+			continue
+		}
+		if strings.Contains(string(cmdline), marker) {
+			return pid, nil
+		}
+	}
+	return 0, errors.New("no running arch-quickshell-shell quickshell instance found")
 }
 
 func runPAM(args []string) error {

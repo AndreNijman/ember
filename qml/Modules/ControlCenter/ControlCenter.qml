@@ -5,7 +5,7 @@ import "../../Theme"
 import "../../Atoms" as Atoms
 import "../../Services"
 
-PopupWindow {
+PanelWindow {
     id: root
     //  ControlCenter: 380xauto (cap 720) popup top-right under bar.
     //  Panels: Quick toggles, Audio, Brightness, Power.
@@ -16,7 +16,10 @@ PopupWindow {
     implicitHeight: Math.min(720, column.implicitHeight)
     color: Theme.ink1
     WlrLayershell.namespace: "aqs-control"
-    anchor.window: null
+    WlrLayershell.layer: WlrLayer.Overlay
+    anchors { top: true; right: true }
+    margins { top: 32; right: 8 }
+    exclusiveZone: 0
 
     Column {
         id: column
@@ -91,6 +94,8 @@ PopupWindow {
                 }
             }
         }
+        PowerProfileRow { width: parent.width }
+        PowerRow        { width: parent.width }
     }
 
     Keys.onEscapePressed: (event) => { root.open_ = false; event.accepted = true }

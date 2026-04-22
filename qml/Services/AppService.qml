@@ -45,22 +45,31 @@ QtObject {
     }
 
     property Process _scan: Process {
-        command: ["sh", "-c", "for d in /usr/share/applications ~/.local/share/applications; do [ -d \"$d\" ] || continue; for f in \"$d\"/*.desktop; do [ -e \"$f\" ] || continue; awk -F= '/^Name=/{n=$2} /^Exec=/{e=$2} /^Keywords=/{k=$2} END{if(n&&e) printf \"%s\\t%s\\t%s\\t%s\\n\", FILENAME, n, e, k}' \"$f\"; done; done"]
+        command: ["sh", "-c", "for d in /usr/share/applications /usr/local/share/applications /var/lib/flatpak/exports/share/applications \"$HOME/.local/share/flatpak/exports/share/applications\" \"$HOME/.local/share/applications\"; do [ -d \"$d\" ] || continue; for f in \"$d\"/*.desktop; do [ -e \"$f\" ] || continue; awk -F= 'BEGIN{inmain=0; name=\"\"; exe=\"\"; kw=\"\"; nd=0; hd=0; tp=\"Application\"} /^\\[Desktop Entry\\]/{inmain=1; next} /^\\[/{inmain=0; next} inmain && /^Name=/ && name==\"\" {sub(/^Name=/,\"\"); name=$0} inmain && /^Exec=/ && exe==\"\" {sub(/^Exec=/,\"\"); exe=$0} inmain && /^Keywords=/{sub(/^Keywords=/,\"\"); kw=$0} inmain && /^NoDisplay=/{nd=($2==\"true\")} inmain && /^Hidden=/{hd=($2==\"true\")} inmain && /^Type=/{tp=$2} END{if(name && exe && !nd && !hd && tp==\"Application\") printf \"%s\\t%s\\t%s\\t%s\\n\", FILENAME, name, exe, kw}' \"$f\"; done; done"]
         stdout: StdioCollector {
             onStreamFinished: {
                 var lines = (this.text || "").split("\n")
-                var list = []
+                var dedup = {}
                 for (var i = 0; i < lines.length; i++) {
                     var p = lines[i].split("\t")
                     if (p.length < 3) continue
-                    list.push({
-                        id: p[0],
+                    var path = p[0]
+                    var id = path.substring(path.lastIndexOf("/") + 1)
+                    dedup[id] = {
+                        id: id,
                         name: p[1],
                         exec: (p[2] || "").replace(/%[a-zA-Z]/g, "").trim(),
                         keywords: p[3] || "",
                         tier: 0
-                    })
+                    }
                 }
+                var list = []
+                for (var k in dedup) list.push(dedup[k])
+                list.sort(function(a, b) {
+                    var na = (a.name || "").toLowerCase()
+                    var nb = (b.name || "").toLowerCase()
+                    return na < nb ? -1 : na > nb ? 1 : 0
+                })
                 root.entries = list
             }
         }

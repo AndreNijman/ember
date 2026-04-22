@@ -18,7 +18,7 @@ PanelWindow {
     }
     implicitHeight: Theme.barH
     color: Theme.ink1
-    exclusionMode: ExclusionMode.Normal
+    exclusiveZone: Theme.barH
     WlrLayershell.layer: WlrLayer.Top
     WlrLayershell.namespace: "aqs-bar"
 

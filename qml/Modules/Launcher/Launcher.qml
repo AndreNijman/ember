@@ -6,7 +6,7 @@ import "../../Theme"
 import "../../Atoms" as Atoms
 import "../../Services"
 
-PopupWindow {
+PanelWindow {
     id: root
     //  Launcher: 640px wide centered 25% from top, opens on demand via
     //  `aqs ipc launcher toggle`. Flat ink1 canvas, hairline border,
@@ -18,8 +18,11 @@ PopupWindow {
     implicitHeight: column.implicitHeight
     color: Theme.ink1
     WlrLayershell.namespace: "aqs-launcher"
-
-    anchor.window: null
+    WlrLayershell.layer: WlrLayer.Overlay
+    WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
+    anchors { top: true }
+    margins { top: 200 }
+    exclusiveZone: 0
 
     Column {
         id: column
@@ -38,6 +41,14 @@ PopupWindow {
             placeholderText: "run, search, or =expr"
             focus: root.open_
             onTextChanged: AppService.query = text
+            Keys.onEscapePressed: (event) => { root.open_ = false; event.accepted = true }
+            Keys.onReturnPressed: (event) => {
+                if (AppService.results.length > 0) {
+                    AppService.launch(AppService.results[list.currentIndex].id)
+                    root.open_ = false
+                }
+                event.accepted = true
+            }
         }
         CalcStrip {
             width: parent.width
@@ -86,12 +97,4 @@ PopupWindow {
         }
     }
 
-    Keys.onEscapePressed: (event) => { root.open_ = false; event.accepted = true }
-    Keys.onReturnPressed: (event) => {
-        if (AppService.results.length > 0) {
-            AppService.launch(AppService.results[list.currentIndex].id)
-            root.open_ = false
-        }
-        event.accepted = true
-    }
 }

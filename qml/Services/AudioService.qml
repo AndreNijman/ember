@@ -26,4 +26,14 @@ QtObject {
         if (!sink || !sink.audio) return
         sink.audio.muted = !sink.audio.muted
     }
+    function toggleMicMute() {
+        if (!source || !source.audio) return
+        source.audio.muted = !source.audio.muted
+    }
+    function increment(pct) {
+        setVolume(volume + pct / 100.0)
+    }
+    function decrement(pct) {
+        setVolume(volume - pct / 100.0)
+    }
 }

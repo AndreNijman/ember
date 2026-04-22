@@ -4,7 +4,7 @@ import Quickshell.Wayland
 import "../../Theme"
 import "../../Services"
 
-PopupWindow {
+PanelWindow {
     id: root
     //  NotificationCenter: 380x580 popup anchored top-right under the bar.
     //  Grouped list of notifications from NotifService.items.
@@ -15,7 +15,10 @@ PopupWindow {
     implicitHeight: 580
     color: Theme.ink1
     WlrLayershell.namespace: "aqs-notifications"
-    anchor.window: null
+    WlrLayershell.layer: WlrLayer.Overlay
+    anchors { top: true; right: true }
+    margins { top: 32; right: 8 }
+    exclusiveZone: 0
 
     Column {
         anchors.fill: parent
