@@ -17,8 +17,16 @@ Status: personal daily driver, pre-release. Expect rough edges.
   reboot / off / logout)
 - Notification Center: live notifications via Quickshell
 - OSD: volume and brightness feedback on media keys
-- Lock screen: wayland session-lock with PAM authentication (stub; wire-up incomplete)
+- Lock screen: wayland session-lock with PAM authentication (caps-lock detect,
+  auth-fail flash)
 - Wallpaper manager: `mpvpaper` per output
+- Clipboard: cliphist-backed history panel with text + image thumbnails,
+  search, paste, delete, wipe (requires `cliphist.service` user unit enabled —
+  see Runtime)
+- Keybinds: overlay cheat sheet for Hyprland bindings
+- Calendar: month grid popover from top bar clock
+- Overview: workspace/window grid
+- SingBox: VLESS+REALITY tunnel toggle panel (see projects/sing-box-vpn)
 
 ## Requirements
 
@@ -27,7 +35,19 @@ Status: personal daily driver, pre-release. Expect rough edges.
 - Go 1.21+ (for the `aqs` CLI)
 - PAM development headers (`pam` on Arch)
 - Runtime helpers: `brightnessctl`, `nmcli`, `powerprofilesctl`, `playerctl`,
-  `qalc`, `mpvpaper`, `grim`
+  `qalc`, `mpvpaper`, `grim`, `cliphist`, `wl-clipboard`
+
+## Runtime
+
+Enable the Arch-shipped cliphist watcher so the Clipboard panel captures new
+copies (it only reads cliphist; it does not watch the clipboard itself):
+
+```sh
+systemctl --user enable --now cliphist.service
+```
+
+Stock unit covers text. For image capture add an override or a second unit
+invoking `wl-paste --type image --watch cliphist store`.
 
 ## Build
 
@@ -64,14 +84,19 @@ aqs ipc launcher toggle
 aqs ipc control toggle
 aqs ipc notifications toggle
 aqs ipc lock engage
-aqs ipc audio toggleMute
+aqs ipc audio mute
 aqs ipc audio increment 5
 aqs ipc brightness increment 5
 aqs ipc workspace focus 3
+aqs ipc clipboard toggle
+aqs ipc keybinds toggle
+aqs ipc overview toggle
+aqs ipc singbox toggle
 ```
 
 Full target list: `shell`, `launcher`, `control`, `notifications`, `lock`,
-`osd`, `wallpaper`, `workspace`, `audio`, `brightness`.
+`osd`, `workspace`, `wallpaper`, `audio`, `brightness`, `keybinds`, `singbox`,
+`clipboard`, `overview`.
 
 ## Layout
 
@@ -81,9 +106,11 @@ internal/             proto, socket, ipc, pam
 qml/
   shell.qml           ShellRoot entry
   Theme/              Tokens / Theme / Fonts singletons
-  Atoms/              12 primitives
-  Services/           15 singletons (Hyprland, Audio, Network, ...)
-  Modules/            per-surface trees (TopBar, Launcher, ControlCenter, ...)
+  Atoms/              13 primitives
+  Services/           19 singletons (Hyprland, Audio, Network, ...)
+  Modules/            per-surface trees (TopBar, Launcher, ControlCenter,
+                      NotificationCenter, OSD, Lock, WallpaperManager,
+                      Clipboard, Keybinds, Calendar, Overview, SingBox)
 scripts/              smoke + ipc-roundtrip
 ```
 
