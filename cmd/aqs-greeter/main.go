@@ -144,22 +144,132 @@ func readFull(c net.Conn, buf []byte) (int, error) {
 	return total, nil
 }
 
+type sessionEntry struct {
+	ID   string   `json:"id"`
+	Name string   `json:"name"`
+	Exec []string `json:"exec"`
+}
+
+// shellSplit is a tiny POSIX-shell-ish splitter that drops desktop-entry
+// %f/%U/%i/%c placeholders. Good enough for the Exec= lines the major
+// compositors ship.
+func shellSplit(s string) []string {
+	out := []string{}
+	cur := ""
+	inSingle, inDouble := false, false
+	for _, r := range s {
+		switch {
+		case r == '\'' && !inDouble:
+			inSingle = !inSingle
+		case r == '"' && !inSingle:
+			inDouble = !inDouble
+		case r == ' ' && !inSingle && !inDouble:
+			if cur != "" {
+				out = append(out, cur)
+				cur = ""
+			}
+		default:
+			cur += string(r)
+		}
+	}
+	if cur != "" {
+		out = append(out, cur)
+	}
+	cleaned := []string{}
+	for _, tok := range out {
+		switch tok {
+		case "%f", "%F", "%u", "%U", "%i", "%c", "%k":
+			continue
+		}
+		cleaned = append(cleaned, tok)
+	}
+	return cleaned
+}
+
+func scanSessions() []sessionEntry {
+	dirs := []string{"/usr/share/wayland-sessions", "/usr/share/xsessions"}
+	seen := map[string]bool{}
+	var out []sessionEntry
+	for _, dir := range dirs {
+		entries, err := os.ReadDir(dir)
+		if err != nil {
+			continue
+		}
+		for _, e := range entries {
+			name := e.Name()
+			if !strings.HasSuffix(name, ".desktop") {
+				continue
+			}
+			id := strings.TrimSuffix(name, ".desktop")
+			if seen[id] {
+				continue
+			}
+			data, err := os.ReadFile(filepath.Join(dir, name))
+			if err != nil {
+				continue
+			}
+			displayName := id
+			execLine := ""
+			tryExec := ""
+			haveBaseName := false
+			for _, line := range strings.Split(string(data), "\n") {
+				if strings.HasPrefix(line, "Name=") && !haveBaseName {
+					displayName = strings.TrimPrefix(line, "Name=")
+					haveBaseName = true
+				} else if strings.HasPrefix(line, "Exec=") {
+					execLine = strings.TrimPrefix(line, "Exec=")
+				} else if strings.HasPrefix(line, "TryExec=") {
+					tryExec = strings.TrimPrefix(line, "TryExec=")
+				}
+			}
+			if execLine == "" {
+				continue
+			}
+			if tryExec != "" {
+				if _, err := exec.LookPath(tryExec); err != nil {
+					continue
+				}
+			}
+			out = append(out, sessionEntry{ID: id, Name: displayName, Exec: shellSplit(execLine)})
+			seen[id] = true
+		}
+	}
+	return out
+}
+
 type session struct {
 	mu        sync.Mutex
 	conn      net.Conn
 	username  string
 	command   []string
 	configArg string
+	sessions  []sessionEntry
+	override  string
+}
+
+// cancelLocked sends cancel_session on the current conn (if any), drains
+// the response, closes the conn. Caller must hold s.mu. Best-effort —
+// ignores errors; greetd needs the cancel to free its session slot before
+// the next create_session, otherwise it refuses with
+// "a session is already configured".
+func (s *session) cancelLocked() {
+	if s.conn == nil {
+		return
+	}
+	_ = sendGreetd(s.conn, greetdReq{Type: "cancel_session"})
+	_, _ = recvGreetd(s.conn)
+	_ = s.conn.Close()
+	s.conn = nil
 }
 
 func (s *session) auth(user, pass string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if s.conn != nil {
-		_ = s.conn.Close()
-		s.conn = nil
-	}
+	// Always cancel any in-flight session before starting a new one so a
+	// previous failed attempt doesn't leave greetd thinking a session is
+	// still being configured.
+	s.cancelLocked()
 
 	sock := os.Getenv("GREETD_SOCK")
 	if sock == "" {
@@ -178,20 +288,26 @@ func (s *session) auth(user, pass string) error {
 	for {
 		r, err := recvGreetd(c)
 		if err != nil {
+			s.cancelLocked()
 			return err
 		}
 		switch r.Type {
 		case "success":
 			return nil
 		case "error":
-			return fmt.Errorf("%s: %s", r.ErrorType, r.Description)
+			msg := fmt.Errorf("%s: %s", r.ErrorType, r.Description)
+			s.cancelLocked()
+			return msg
 		case "auth_message":
 			// Reply with password regardless of message type for now.
 			if err := sendGreetd(c, greetdReq{Type: "post_auth_message_response", Response: pass}); err != nil {
+				s.cancelLocked()
 				return err
 			}
 		default:
-			return fmt.Errorf("unexpected greetd response: %s", r.Type)
+			err := fmt.Errorf("unexpected greetd response: %s", r.Type)
+			s.cancelLocked()
+			return err
 		}
 	}
 }
@@ -203,9 +319,24 @@ func (s *session) start() error {
 	if s.conn == nil {
 		return fmt.Errorf("no authenticated session")
 	}
-	cmd := append([]string{}, s.command...)
-	if s.configArg != "" {
-		cmd = append(cmd, "-c", s.configArg)
+
+	// If the QML side picked a desktop entry from the scanned list, use
+	// that entry's Exec verbatim and skip the legacy --command/--config
+	// pair entirely.
+	var cmd []string
+	if s.override != "" {
+		for _, se := range s.sessions {
+			if se.ID == s.override {
+				cmd = append([]string{}, se.Exec...)
+				break
+			}
+		}
+	}
+	if cmd == nil {
+		cmd = append([]string{}, s.command...)
+		if s.configArg != "" {
+			cmd = append(cmd, "-c", s.configArg)
+		}
 	}
 	if err := sendGreetd(s.conn, greetdReq{Type: "start_session", Cmd: cmd}); err != nil {
 		return err
@@ -245,6 +376,11 @@ func handleClient(c net.Conn, sess *session, qsProc *exec.Cmd, done chan<- struc
 			}
 			w.Flush()
 		case "start":
+			if len(parts) >= 2 {
+				sess.mu.Lock()
+				sess.override = parts[1]
+				sess.mu.Unlock()
+			}
 			if err := sess.start(); err != nil {
 				fmt.Fprintf(w, "err %s\n", err.Error())
 				w.Flush()
@@ -313,9 +449,11 @@ func main() {
 		log.Printf("chmod %s: %v", sockPath, err)
 	}
 
-	sess := &session{command: []string{command}, configArg: config}
+	sessions := scanSessions()
+	sess := &session{command: []string{command}, configArg: config, sessions: sessions}
 
 	defaultUserName := defaultUser()
+	sessionsJSON, _ := json.Marshal(sessions)
 
 	// Spawn the host compositor for the greeter VT. The compositor's config
 	// is responsible for exec-once'ing quickshell with the greeter QML; the
@@ -336,6 +474,7 @@ func main() {
 		"AQS_GREETER_SOCK="+sockPath,
 		"AQS_GREETER_QML="+qmlPath,
 		"AQS_GREETER_DEFAULT_USER="+defaultUserName,
+		"AQS_GREETER_SESSIONS="+string(sessionsJSON),
 	)
 	if hyprConf != "" {
 		qs.Env = append(qs.Env, "HYPRLAND_CONFIG="+hyprConf)

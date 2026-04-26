@@ -81,6 +81,58 @@ ShellRoot {
                         Row {
                             spacing: Theme.s2
                             width: parent.width
+                            visible: app.sessions.length > 1
+                            Text {
+                                text: "session"
+                                color: Theme.ink5
+                                font.family: Theme.fontUi
+                                font.pixelSize: Theme.tsm
+                                width: 60
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+                            Row {
+                                spacing: Theme.s2
+                                width: 280
+                                Text {
+                                    text: "‹"
+                                    color: Theme.ink6
+                                    font.family: Theme.fontUi
+                                    font.pixelSize: Theme.tmd
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    MouseArea {
+                                        anchors.fill: parent; anchors.margins: -Theme.s2
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: app.cycleSession(-1)
+                                    }
+                                }
+                                Text {
+                                    text: app.selectedSessionName
+                                    color: Theme.accent
+                                    font.family: Theme.fontUi
+                                    font.pixelSize: Theme.tsm
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    width: 220
+                                    elide: Text.ElideRight
+                                    horizontalAlignment: Text.AlignHCenter
+                                }
+                                Text {
+                                    text: "›"
+                                    color: Theme.ink6
+                                    font.family: Theme.fontUi
+                                    font.pixelSize: Theme.tmd
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    MouseArea {
+                                        anchors.fill: parent; anchors.margins: -Theme.s2
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: app.cycleSession(1)
+                                    }
+                                }
+                            }
+                        }
+
+                        Row {
+                            spacing: Theme.s2
+                            width: parent.width
                             Text {
                                 text: "user"
                                 color: Theme.ink5
@@ -188,6 +240,27 @@ ShellRoot {
     property bool busy: false
     property bool authed: false
 
+    property var sessions: {
+        var raw = Quickshell.env("AQS_GREETER_SESSIONS") || "[]"
+        try { return JSON.parse(raw) } catch (e) { return [] }
+    }
+    property int sessionIdx: {
+        for (var i = 0; i < sessions.length; i++) {
+            if (sessions[i].id === "hyprland") return i
+        }
+        return 0
+    }
+    property string selectedSessionId: sessions.length > 0 && sessionIdx >= 0 && sessionIdx < sessions.length
+        ? sessions[sessionIdx].id : ""
+    property string selectedSessionName: sessions.length > 0 && sessionIdx >= 0 && sessionIdx < sessions.length
+        ? sessions[sessionIdx].name : ""
+
+    function cycleSession(dir) {
+        if (sessions.length === 0) return
+        var n = sessions.length
+        sessionIdx = ((sessionIdx + dir) % n + n) % n
+    }
+
     function submit(user, pass) {
         if (busy) return
         if (user.length === 0 || pass.length === 0) {
@@ -216,7 +289,10 @@ ShellRoot {
                     if (!app.authed) {
                         app.authed = true
                         app.busy = false
-                        app.send("start")
+                        var startCmd = app.selectedSessionId.length > 0
+                            ? "start " + app.selectedSessionId
+                            : "start"
+                        app.send(startCmd)
                     } else {
                         // start succeeded — greetd will replace us.
                     }
