@@ -1,0 +1,17 @@
+# Example /etc/greetd/config.toml for the ember greeter.
+#
+# Install:
+#   1. Build:  make build
+#   2. Copy:   sudo install -Dm755 build/aqs-greeter /usr/local/bin/aqs-greeter
+#              sudo install -Dm644 qml/greeter.qml   /usr/share/aqs-greeter/greeter.qml
+#              sudo cp -r qml/Theme qml/Atoms qml/Services /usr/share/aqs-greeter/
+#   3. Replace /etc/greetd/config.toml with this file (or merge).
+#   4. Make sure /etc/greetd/hyprland.conf exists (minimal Hyprland session).
+#   5. systemctl restart greetd  (warning: kicks any active greeter session)
+
+[terminal]
+vt = 1
+
+[default_session]
+command = "/usr/local/bin/aqs-greeter -command Hyprland -config /etc/greetd/hyprland.conf -qml /usr/share/aqs-greeter/greeter.qml"
+user = "greeter"

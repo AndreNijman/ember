@@ -14,6 +14,7 @@
 REPO      := $(abspath $(CURDIR))
 BUILD     := $(REPO)/build
 AQS       := $(BUILD)/aqs
+GREETER   := $(BUILD)/aqs-greeter
 QML_DIR   := $(REPO)/qml
 QML_FILES := $(shell find $(QML_DIR) -name '*.qml')
 QS_LIB    := /usr/lib/qt6/qml
@@ -27,7 +28,9 @@ all: build vet lint
 build:
 	@mkdir -p $(BUILD)
 	$(GO) build -o $(AQS) ./cmd/aqs
+	$(GO) build -o $(GREETER) ./cmd/aqs-greeter
 	@echo "built $(AQS)"
+	@echo "built $(GREETER)"
 
 vet:
 	$(GO) vet ./...
