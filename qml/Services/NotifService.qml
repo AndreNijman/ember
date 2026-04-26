@@ -1,36 +1,38 @@
 pragma Singleton
 import QtQuick
+import Quickshell
 import Quickshell.Services.Notifications
 
 QtObject {
     id: root
-    //  NotifService exposes the live notification list + provides mute /
-    //  clear helpers. The live server is Quickshell's NotificationServer
-    //  singleton; we wrap it to keep modules off the raw API.
-    property var items: NotificationServer.trackedNotifications
-        ? NotificationServer.trackedNotifications.values
-        : []
+
     property bool dnd: false
+    property var items: _server.trackedNotifications.values
     property int count: items.length
 
     signal toastPosted(var notification)
 
-    property var _seen: ({})
+    property NotificationServer _server: NotificationServer {
+        keepOnReload: false
+        imageSupported: true
+        actionsSupported: true
+        bodyMarkupSupported: true
+        bodySupported: true
+        bodyHyperlinksSupported: true
+        bodyImagesSupported: true
+        persistenceSupported: true
 
-    onCountChanged: {
-        for (var i = 0; i < items.length; i++) {
-            var n = items[i]
-            if (n && n.id !== undefined && !_seen[n.id]) {
-                _seen[n.id] = true
-                if (!root.dnd) toastPosted(n)
-            }
+        onNotification: (n) => {
+            n.tracked = true
+            if (!root.dnd) root.toastPosted(n)
         }
     }
 
     function setDnd(v) { root.dnd = v }
     function dismiss(id) {
-        for (var i = 0; i < items.length; i++) {
-            if (items[i].id === id) { items[i].dismiss(); return }
+        var snap = items
+        for (var i = 0; i < snap.length; i++) {
+            if (snap[i].id === id) { snap[i].dismiss(); return }
         }
     }
     function invoke(notif, actionId) {
@@ -60,12 +62,5 @@ QtObject {
             }
         }
         return result
-    }
-
-    Component.onCompleted: {
-        NotificationServer.keepOnReload = false
-        NotificationServer.imageSupported = true
-        NotificationServer.actionsSupported = true
-        NotificationServer.bodyMarkupSupported = true
     }
 }
