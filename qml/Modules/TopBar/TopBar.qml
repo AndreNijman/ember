@@ -60,6 +60,16 @@ PanelWindow {
         }
 
         TrayStrip { id: tray }
+
+        Atoms.Hairline {
+            orientation: Qt.Vertical
+            height: Theme.barH - Theme.s2 * 2
+            anchors.verticalCenter: parent.verticalCenter
+            dim: true
+            visible: nowPlaying.visible && (focusTitle.visible || tray.visible)
+        }
+
+        NowPlaying { id: nowPlaying }
     }
 
     Row {
