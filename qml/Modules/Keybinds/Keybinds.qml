@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import Quickshell
+import Quickshell.Io
 import Quickshell.Wayland
 import "../../Theme"
 import "../../Atoms" as Atoms
@@ -20,75 +21,58 @@ PanelWindow {
     margins { top: 120 }
     exclusiveZone: 0
 
-    readonly property var sections: [
-        { title: "apps", binds: [
-            { k: "SUPER T",            d: "terminal (kitty)" },
-            { k: "SUPER W",            d: "browser (zen)" },
-            { k: "SUPER B",            d: "wallpaper picker" },
-            { k: "SUPER C",            d: "claude code" },
-            { k: "SUPER M",            d: "spotify" },
-            { k: "SUPER D",            d: "discord" },
-            { k: "ALT SPACE",          d: "launcher" },
-            { k: "SUPER .",            d: "launcher" },
-            { k: "SUPER K",            d: "control center" },
-            { k: "SUPER N",            d: "notifications" },
-            { k: "SUPER /",            d: "this sheet" },
-        ] },
-        { title: "window", binds: [
-            { k: "SUPER Q",            d: "close" },
-            { k: "SUPER F",            d: "maximize" },
-            { k: "SUPER SHIFT F",      d: "fullscreen" },
-            { k: "SUPER SHIFT T",      d: "toggle float" },
-            { k: "SUPER ,",            d: "toggle group" },
-            { k: "SUPER R",            d: "toggle split" },
-            { k: "SUPER CTRL F",       d: "reset size" },
-        ] },
-        { title: "focus", binds: [
-            { k: "SUPER ← ↓ ↑ →",      d: "move focus" },
-            { k: "SUPER SHIFT arrows",  d: "move window" },
-            { k: "SUPER SHIFT H J K L", d: "move window" },
-            { k: "SUPER CTRL arrows",   d: "focus monitor" },
-            { k: "SUPER SHIFT CTRL arrows", d: "move to monitor" },
-            { k: "SUPER HOME / END",   d: "first / last" },
-        ] },
-        { title: "workspace", binds: [
-            { k: "SUPER 1 … 0",        d: "switch" },
-            { k: "SUPER SHIFT 1 … 9",  d: "send to" },
-            { k: "SUPER ALT 1 … 0",    d: "send to (alt)" },
-            { k: "SUPER U / PgDn",     d: "next" },
-            { k: "SUPER PgUp",         d: "prev" },
-            { k: "SUPER CTRL ↓ / ↑",   d: "send + follow" },
-            { k: "SUPER S",            d: "special (magic)" },
-            { k: "CTRL SHIFT R",       d: "rename workspace" },
-        ] },
-        { title: "resize", binds: [
-            { k: "SUPER - / =",        d: "width" },
-            { k: "SUPER SHIFT - / =",  d: "height" },
-            { k: "SUPER [ / ]",        d: "preselect L / R" },
-        ] },
-        { title: "media", binds: [
-            { k: "XF86 VolUp / Down",  d: "volume" },
-            { k: "XF86 Mute",          d: "mute" },
-            { k: "XF86 MicMute",       d: "mic mute" },
-            { k: "CTRL SUPER SPACE",   d: "play / pause" },
-            { k: "CTRL SUPER = / -",   d: "next / prev track" },
-            { k: "XF86 Brightness",    d: "brightness" },
-        ] },
-        { title: "screenshot", binds: [
-            { k: "PRINT",              d: "output → clipboard" },
-            { k: "CTRL PRINT",         d: "output save" },
-            { k: "ALT PRINT",          d: "window save" },
-            { k: "SUPER SHIFT S",      d: "region → clipboard" },
-            { k: "SUPER SHIFT C",      d: "color picker" },
-        ] },
-        { title: "system", binds: [
-            { k: "SUPER L",            d: "lock" },
-            { k: "SUPER SHIFT E",      d: "exit hyprland" },
-            { k: "CTRL ALT DEL",       d: "power menu" },
-            { k: "SUPER SHIFT P",      d: "dpms toggle" },
-            { k: "CTRL ALT C",         d: "clear notifications" },
-        ] },
-    ]
+    property string bindsPath: (Quickshell.env("AQS_BINDS_FILE")
+        || ((Quickshell.env("XDG_CONFIG_HOME") || (Quickshell.env("HOME") + "/.config"))
+            + "/hypr/aqs/binds.conf"))
+
+    property var sections: []
+
+    onOpen_Changed: if (open_) bindsFile.reload()
+
+    FileView {
+        id: bindsFile
+        path: root.bindsPath
+        blockLoading: false
+        onLoaded: root.sections = root._parse(this.text())
+        onLoadFailed: root.sections = []
+    }
+
+    function _parse(text) {
+        if (!text || text.length === 0) return []
+        var lines = text.split("\n")
+        var sectionRe  = /^\s*#\s*=+\s*(.+?)\s*=*\s*$/
+        var bindRe     = /^\s*(bind[a-z]*)\s*=\s*(.*)$/
+        var groups = []
+        var current = { title: "general", binds: [] }
+        function push() {
+            if (current.binds.length > 0) groups.push(current)
+        }
+        for (var i = 0; i < lines.length; i++) {
+            var line = lines[i]
+            var sm = sectionRe.exec(line)
+            if (sm) {
+                push()
+                current = { title: sm[1].toLowerCase(), binds: [] }
+                continue
+            }
+            var bm = bindRe.exec(line)
+            if (!bm) continue
+            var rest = bm[2]
+            var parts = rest.split(",").map(function(s) { return s.trim() })
+            if (parts.length < 3) continue
+            var mods = parts[0]
+            var key  = parts[1]
+            var action = parts[2]
+            var args = parts.slice(3).join(", ")
+            var k = (mods.length > 0 ? mods + " " : "") + key
+            var d = args.length > 0 ? action + " " + args : action
+            // Trim noisy `exec` prefix.
+            d = d.replace(/^exec\s+/, "")
+            current.binds.push({ k: k.toUpperCase(), d: d })
+        }
+        push()
+        return groups
+    }
 
     property string searchQuery: ""
     onOpen_Changed: if (!open_) searchQuery = ""

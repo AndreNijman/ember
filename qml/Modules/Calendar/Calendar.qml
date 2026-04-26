@@ -71,6 +71,21 @@ PanelWindow {
         }
     }
 
+    property bool addOpen: false
+
+    Process {
+        id: _add
+        command: ["true"]
+        onExited: { root.addOpen = false; root._loadEvents() }
+    }
+
+    function _addEvent(title, when) {
+        if (!title || title.length === 0) return
+        _add.command = ["sh", "-c", "gcalcli add --title \"$AQS_TITLE\" --when \"$AQS_WHEN\" --duration 60 --noprompt"]
+        _add.environment = ({ "AQS_TITLE": title, "AQS_WHEN": when || "today 18:00" })
+        _add.running = true
+    }
+
     property var _today: new Date()
     property int _todayDay: _today.getDate()
     property int _todayMonth: _today.getMonth()
@@ -242,6 +257,67 @@ PanelWindow {
                 color: Theme.ink5
                 font.family: Theme.fontUi
                 font.pixelSize: Theme.txs
+            }
+        }
+
+        Atoms.Hairline { width: parent.width }
+
+        Rectangle {
+            width: parent.width; height: Theme.rowH; color: Theme.ink2
+            antialiasing: false
+            Text {
+                anchors.left: parent.left; anchors.leftMargin: Theme.s3
+                anchors.verticalCenter: parent.verticalCenter
+                text: root.addOpen ? "− cancel" : "+ add event"
+                color: Theme.accent
+                font.family: Theme.fontUi
+                font.pixelSize: Theme.txs
+                MouseArea {
+                    anchors.fill: parent; anchors.margins: -Theme.s1
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: root.addOpen = !root.addOpen
+                }
+            }
+        }
+
+        Item {
+            visible: root.addOpen
+            width: parent.width
+            height: visible ? addCol.implicitHeight + Theme.s2 * 2 : 0
+
+            Column {
+                id: addCol
+                anchors.fill: parent
+                anchors.margins: Theme.s2
+                spacing: Theme.s2
+
+                Atoms.Field {
+                    id: titleField
+                    width: parent.width
+                    placeholderText: "title"
+                }
+                Atoms.Field {
+                    id: whenField
+                    width: parent.width
+                    placeholderText: "when (e.g. 'today 18:00', 'tomorrow 9am', '2026-05-01 14:30')"
+                    text: "today 18:00"
+                    Keys.onReturnPressed: root._addEvent(titleField.text, whenField.text)
+                }
+                Row {
+                    spacing: Theme.s3
+                    anchors.right: parent.right
+                    Text {
+                        text: "save"
+                        color: Theme.accent
+                        font.family: Theme.fontUi
+                        font.pixelSize: Theme.txs
+                        MouseArea {
+                            anchors.fill: parent; anchors.margins: -Theme.s1
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: root._addEvent(titleField.text, whenField.text)
+                        }
+                    }
+                }
             }
         }
     }

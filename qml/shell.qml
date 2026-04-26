@@ -13,6 +13,8 @@ import "Modules/Clipboard"
 import "Modules/SingBox"
 import "Modules/Calendar"
 import "Modules/Overview"
+import "Modules/Settings"
+import "Modules/PowerMenu"
 import "Services"
 
 ShellRoot {
@@ -38,6 +40,8 @@ ShellRoot {
     Overview           { id: overview }
     Clipboard          { id: clipboard }
     SingBoxPanel       { id: singbox  }
+    Settings           { id: settings }
+    PowerMenu          { id: powermenu }
 
     Connections {
         target: HyprlandService
@@ -80,6 +84,12 @@ ShellRoot {
         function onToggleWallpaper()     { wallpaper.open_ = !wallpaper.open_ }
         function onShowWallpaper()       { wallpaper.open_ = true }
         function onHideWallpaper()       { wallpaper.open_ = false }
+        function onToggleSettings()      { settings.open_ = !settings.open_ }
+        function onShowSettings()        { settings.open_ = true }
+        function onHideSettings()        { settings.open_ = false }
+        function onTogglePowerMenu()     { powermenu.open_ = !powermenu.open_ }
+        function onShowPowerMenu()       { powermenu.open_ = true }
+        function onHidePowerMenu()       { powermenu.open_ = false }
     }
 
     IpcHandler {
@@ -180,6 +190,22 @@ ShellRoot {
         function toggle(): string { Ipc.toggleOverview(); return "ok" }
         function show(): string   { Ipc.showOverview();   return "ok" }
         function hide(): string   { Ipc.hideOverview();   return "ok" }
+    }
+    IpcHandler {
+        target: "powermenu"
+        function toggle(): string { Ipc.togglePowerMenu(); return "ok" }
+        function show(): string   { Ipc.showPowerMenu();   return "ok" }
+        function hide(): string   { Ipc.hidePowerMenu();   return "ok" }
+    }
+    IpcHandler {
+        target: "settings"
+        function toggle(): string { Ipc.toggleSettings(); return "ok" }
+        function show(): string   { Ipc.showSettings();   return "ok" }
+        function hide(): string   { Ipc.hideSettings();   return "ok" }
+        function open(): string   { Ipc.showSettings();   return "ok" }
+        function set(key: string, value: string): string {
+            SettingsService.set(key, value); return "ok"
+        }
     }
     IpcHandler {
         target: "brightness"

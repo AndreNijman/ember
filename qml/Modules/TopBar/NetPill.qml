@@ -6,7 +6,7 @@ Item {
     id: root
     implicitHeight: Theme.barH
     implicitWidth: label.implicitWidth + Theme.s3 * 2
-    visible: SystemMonitorService.netRxBps + SystemMonitorService.netTxBps > 1024
+    visible: SettingsService.barShowNet && (SystemMonitorService.netRxBps + SystemMonitorService.netTxBps > 1024)
 
     Text {
         id: label

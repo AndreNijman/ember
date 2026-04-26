@@ -4,8 +4,9 @@ import "../../Services"
 
 Item {
     id: root
+    visible: SettingsService.barShowCpu
     implicitHeight: Theme.barH
-    implicitWidth: label.implicitWidth + Theme.s3 * 2
+    implicitWidth: visible ? label.implicitWidth + Theme.s3 * 2 : 0
 
     Text {
         id: label

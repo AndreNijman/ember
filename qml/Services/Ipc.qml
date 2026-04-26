@@ -55,6 +55,14 @@ QtObject {
     signal showWallpaper()
     signal hideWallpaper()
 
+    signal toggleSettings()
+    signal showSettings()
+    signal hideSettings()
+
+    signal togglePowerMenu()
+    signal showPowerMenu()
+    signal hidePowerMenu()
+
     function status() {
         return JSON.stringify({
             version: { major: 0, minor: 1, patch: 0 },
