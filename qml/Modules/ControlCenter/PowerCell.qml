@@ -13,6 +13,8 @@ Rectangle {
     border.width: Theme.hairW
     border.color: hover.containsMouse ? (root.danger ? Theme.err : Theme.accent) : Theme.hair
     antialiasing: false
+    Behavior on color        { ColorAnimation { duration: Theme.tFast } }
+    Behavior on border.color { ColorAnimation { duration: Theme.tFast } }
 
     Rectangle {
         id: holdFill
@@ -31,6 +33,7 @@ Rectangle {
         color: hover.containsMouse ? (root.danger ? Theme.err : Theme.accent) : Theme.ink7
         font.family: Theme.fontUi
         font.pixelSize: Theme.tsm
+        Behavior on color { ColorAnimation { duration: Theme.tFast } }
     }
 
     Timer {

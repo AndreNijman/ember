@@ -70,6 +70,7 @@ Item {
                         anchors.fill: parent
                         color: itemHover.containsMouse && modelData.enabled ? Theme.ink2 : "transparent"
                         antialiasing: false
+                        Behavior on color { ColorAnimation { duration: Theme.tFast } }
 
                         Text {
                             anchors.verticalCenter: parent.verticalCenter
@@ -82,6 +83,7 @@ Item {
                             font.family: Theme.fontUi
                             font.pixelSize: Theme.tsm
                             elide: Text.ElideRight
+                            Behavior on color { ColorAnimation { duration: Theme.tFast } }
                         }
 
                         MouseArea {

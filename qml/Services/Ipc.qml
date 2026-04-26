@@ -63,6 +63,15 @@ QtObject {
     signal showPowerMenu()
     signal hidePowerMenu()
 
+    signal toggleColors()
+    signal showColors()
+    signal hideColors()
+    signal pickColor()
+
+    signal toggleWindowRules()
+    signal showWindowRules()
+    signal hideWindowRules()
+
     function status() {
         return JSON.stringify({
             version: { major: 0, minor: 1, patch: 0 },

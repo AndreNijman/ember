@@ -15,6 +15,8 @@ import "Modules/Calendar"
 import "Modules/Overview"
 import "Modules/Settings"
 import "Modules/PowerMenu"
+import "Modules/Colors"
+import "Modules/WindowRules"
 import "Services"
 
 ShellRoot {
@@ -42,6 +44,8 @@ ShellRoot {
     SingBoxPanel       { id: singbox  }
     Settings           { id: settings }
     PowerMenu          { id: powermenu }
+    Colors             { id: colors }
+    WindowRules        { id: windowrules }
 
     Connections {
         target: HyprlandService
@@ -90,6 +94,13 @@ ShellRoot {
         function onTogglePowerMenu()     { powermenu.open_ = !powermenu.open_ }
         function onShowPowerMenu()       { powermenu.open_ = true }
         function onHidePowerMenu()       { powermenu.open_ = false }
+        function onToggleColors()        { colors.open_ = !colors.open_ }
+        function onShowColors()          { colors.open_ = true }
+        function onHideColors()          { colors.open_ = false }
+        function onPickColor()           { ColorService.pick() }
+        function onToggleWindowRules()   { windowrules.open_ = !windowrules.open_ }
+        function onShowWindowRules()     { windowrules.open_ = true }
+        function onHideWindowRules()     { windowrules.open_ = false }
     }
 
     IpcHandler {
@@ -190,6 +201,19 @@ ShellRoot {
         function toggle(): string { Ipc.toggleOverview(); return "ok" }
         function show(): string   { Ipc.showOverview();   return "ok" }
         function hide(): string   { Ipc.hideOverview();   return "ok" }
+    }
+    IpcHandler {
+        target: "windowrules"
+        function toggle(): string { Ipc.toggleWindowRules(); return "ok" }
+        function show(): string   { Ipc.showWindowRules();   return "ok" }
+        function hide(): string   { Ipc.hideWindowRules();   return "ok" }
+    }
+    IpcHandler {
+        target: "colors"
+        function toggle(): string { Ipc.toggleColors(); return "ok" }
+        function show(): string   { Ipc.showColors();   return "ok" }
+        function hide(): string   { Ipc.hideColors();   return "ok" }
+        function pick(): string   { Ipc.pickColor();    return "ok" }
     }
     IpcHandler {
         target: "powermenu"

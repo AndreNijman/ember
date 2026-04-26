@@ -31,6 +31,36 @@ import (
 	"syscall"
 )
 
+// lastLoginUser shells out to `last -F` and returns the most recent
+// non-system user (skipping reboot/wtmp markers). Returns empty on miss.
+func lastLoginUser() string {
+	out, err := exec.Command("last", "-F").Output()
+	if err != nil {
+		return ""
+	}
+	for _, line := range strings.Split(string(out), "\n") {
+		f := strings.Fields(line)
+		if len(f) == 0 {
+			continue
+		}
+		switch f[0] {
+		case "reboot", "wtmp", "shutdown", "":
+			continue
+		}
+		return f[0]
+	}
+	return ""
+}
+
+// defaultUser prefers the most recently logged-in user, falling back
+// to the first /etc/passwd entry with UID >= 1000.
+func defaultUser() string {
+	if u := lastLoginUser(); u != "" {
+		return u
+	}
+	return firstHumanUser()
+}
+
 // firstHumanUser scans /etc/passwd for the first account with UID >= 1000,
 // UID < 65000, and a /home/* home directory. Returns empty string on miss.
 func firstHumanUser() string {
@@ -285,7 +315,7 @@ func main() {
 
 	sess := &session{command: []string{command}, configArg: config}
 
-	defaultUser := firstHumanUser()
+	defaultUserName := defaultUser()
 
 	// Spawn the host compositor for the greeter VT. The compositor's config
 	// is responsible for exec-once'ing quickshell with the greeter QML; the
@@ -305,7 +335,7 @@ func main() {
 	qs.Env = append(os.Environ(),
 		"AQS_GREETER_SOCK="+sockPath,
 		"AQS_GREETER_QML="+qmlPath,
-		"AQS_GREETER_DEFAULT_USER="+defaultUser,
+		"AQS_GREETER_DEFAULT_USER="+defaultUserName,
 	)
 	if hyprConf != "" {
 		qs.Env = append(qs.Env, "HYPRLAND_CONFIG="+hyprConf)

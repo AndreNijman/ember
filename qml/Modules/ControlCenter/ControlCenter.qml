@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import Quickshell
 import Quickshell.Wayland
 import "../../Theme"
@@ -11,7 +12,7 @@ PanelWindow {
     visible: open_
 
     implicitWidth: 380
-    implicitHeight: Math.min(720, column.implicitHeight)
+    implicitHeight: Math.min(720, column.implicitHeight + 2)
     color: Theme.ink1
     WlrLayershell.namespace: "aqs-control"
     WlrLayershell.layer: WlrLayer.Overlay
@@ -28,9 +29,37 @@ PanelWindow {
         Keys.onEscapePressed: (event) => { root.open_ = false; event.accepted = true }
     }
 
+    Flickable {
+        id: scroll
+        anchors.fill: parent
+        contentWidth: width
+        contentHeight: column.implicitHeight
+        clip: true
+        boundsBehavior: Flickable.StopAtBounds
+
+        ScrollBar.vertical: ScrollBar {
+            id: vbar
+            policy: scroll.contentHeight > scroll.height
+                ? ScrollBar.AlwaysOn
+                : ScrollBar.AlwaysOff
+            width: 4
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            background: Rectangle {
+                color: Theme.ink2
+                antialiasing: false
+            }
+            contentItem: Rectangle {
+                color: vbar.pressed ? Theme.accent : Theme.ink5
+                antialiasing: false
+                Behavior on color { ColorAnimation { duration: Theme.tFast } }
+            }
+        }
+
     Column {
         id: column
-        width: parent.width
+        width: scroll.width
         spacing: 0
 
         Rectangle {
@@ -164,5 +193,6 @@ PanelWindow {
         MediaTile { width: parent.width }
         Atoms.Hairline { width: parent.width; visible: MprisService.hasPlayer }
         PowerRow { width: parent.width }
+    }
     }
 }
