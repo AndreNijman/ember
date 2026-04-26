@@ -200,7 +200,8 @@ PanelWindow {
             Text {
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.left: parent.left; anchors.leftMargin: Theme.s3
-                text: "VLESS+REALITY · VPN_HOST:443"
+                text: SettingsService.singBoxLabel.length > 0 ? SettingsService.singBoxLabel : "sing-box · configure server in settings"
+                visible: true
                 color: Theme.ink5
                 font.family: Theme.fontUi
                 font.pixelSize: Theme.t2xs

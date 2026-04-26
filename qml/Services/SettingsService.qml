@@ -16,6 +16,7 @@ QtObject {
     property bool barShowRam:     true
     property bool barShowNet:     true
     property bool barShowVpn:     true
+    property string singBoxLabel: ""
 
     property string _path: (Quickshell.env("XDG_CONFIG_HOME") || (Quickshell.env("HOME") + "/.config")) + "/aqs/settings.json"
     property bool _loaded: false
@@ -35,6 +36,7 @@ QtObject {
                 if (s.barShowRam     !== undefined) root.barShowRam     = s.barShowRam
                 if (s.barShowNet     !== undefined) root.barShowNet     = s.barShowNet
                 if (s.barShowVpn     !== undefined) root.barShowVpn     = s.barShowVpn
+                if (s.singBoxLabel   !== undefined) root.singBoxLabel   = s.singBoxLabel
             } catch (e) {
                 console.warn("SettingsService: parse failed:", e)
             }
@@ -56,6 +58,7 @@ QtObject {
             barShowRam:     root.barShowRam,
             barShowNet:     root.barShowNet,
             barShowVpn:     root.barShowVpn,
+            singBoxLabel:   root.singBoxLabel,
         }, null, 2)
     }
 
@@ -85,6 +88,7 @@ QtObject {
             case "barShowRam":     root.barShowRam     = (value === true || value === "true"); break
             case "barShowNet":     root.barShowNet     = (value === true || value === "true"); break
             case "barShowVpn":     root.barShowVpn     = (value === true || value === "true"); break
+            case "singBoxLabel":   root.singBoxLabel   = String(value); break
             default: return
         }
         save()

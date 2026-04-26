@@ -27,7 +27,10 @@ PanelWindow {
 
     property var sections: []
 
-    onOpen_Changed: if (open_) bindsFile.reload()
+    onOpen_Changed: {
+        if (open_) bindsFile.reload()
+        else searchQuery = ""
+    }
 
     FileView {
         id: bindsFile
@@ -75,7 +78,6 @@ PanelWindow {
     }
 
     property string searchQuery: ""
-    onOpen_Changed: if (!open_) searchQuery = ""
 
     function filteredSections() {
         if (!searchQuery || searchQuery.length === 0) return sections
