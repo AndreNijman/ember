@@ -13,5 +13,7 @@
 vt = 1
 
 [default_session]
-command = "/usr/local/bin/aqs-greeter -command Hyprland -config /etc/greetd/hyprland.conf -qml /usr/share/aqs-greeter/greeter.qml"
+command = "/usr/local/bin/aqs-greeter -command start-hyprland -hypr-config /etc/greetd/hyprland.conf -qml /usr/share/aqs-greeter/greeter.qml"
+# Greeter Hyprland config should set debug.suppress_errors = true to hide
+# Hyprland's in-screen "started without start-hyprland" warning popup.
 user = "greeter"

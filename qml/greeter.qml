@@ -124,6 +124,8 @@ ShellRoot {
                                 passwordCharacter: "•"
                                 selectByMouse: true
                                 cursorVisible: focus
+                                focus: true
+                                activeFocusOnTab: true
                                 Keys.onReturnPressed: app.submit(userField.text, passField.text)
                             }
                         }
@@ -163,12 +165,25 @@ ShellRoot {
                     }
                 }
 
+                Timer {
+                    id: focusGrab
+                    interval: 50
+                    repeat: true
+                    running: win.isPrimary
+                    property int tries: 0
+                    onTriggered: {
+                        passField.forceActiveFocus()
+                        tries++
+                        if (passField.activeFocus || tries > 40) running = false
+                    }
+                }
+
                 Component.onCompleted: if (isPrimary) passField.forceActiveFocus()
             }
         }
     }
 
-    property string defaultUser: Quickshell.env("USER") || ""
+    property string defaultUser: Quickshell.env("AQS_GREETER_DEFAULT_USER") || ""
     property string lastError: ""
     property bool busy: false
     property bool authed: false

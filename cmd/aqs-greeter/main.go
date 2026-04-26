@@ -25,10 +25,40 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"syscall"
 )
+
+// firstHumanUser scans /etc/passwd for the first account with UID >= 1000,
+// UID < 65000, and a /home/* home directory. Returns empty string on miss.
+func firstHumanUser() string {
+	f, err := os.Open("/etc/passwd")
+	if err != nil {
+		return ""
+	}
+	defer f.Close()
+	sc := bufio.NewScanner(f)
+	for sc.Scan() {
+		fields := strings.Split(sc.Text(), ":")
+		if len(fields) < 7 {
+			continue
+		}
+		uid, err := strconv.Atoi(fields[2])
+		if err != nil {
+			continue
+		}
+		if uid < 1000 || uid >= 65000 {
+			continue
+		}
+		if !strings.HasPrefix(fields[5], "/home/") {
+			continue
+		}
+		return fields[0]
+	}
+	return ""
+}
 
 type greetdReq struct {
 	Type     string   `json:"type"`
@@ -213,11 +243,25 @@ func handleClient(c net.Conn, sess *session, qsProc *exec.Cmd, done chan<- struc
 }
 
 func main() {
-	var command, config, qmlPath string
+	var command, config, qmlPath, hyprBin, hyprConf, logPath string
 	flag.StringVar(&command, "command", "Hyprland", "session command to start on success")
-	flag.StringVar(&config, "config", "", "compositor config (passed as `-c <path>`) ")
+	flag.StringVar(&config, "config", "", "session compositor config (passed as `-c <path>`) ")
 	flag.StringVar(&qmlPath, "qml", "/usr/share/aqs-greeter/greeter.qml", "path to greeter qml")
+	flag.StringVar(&hyprBin, "hypr", "start-hyprland", "compositor binary used to host the greeter UI (start-hyprland silences the unsupported-launch warning)")
+	flag.StringVar(&hyprConf, "hypr-config", "/etc/greetd/hyprland.conf", "compositor config used while hosting the greeter UI")
+	flag.StringVar(&logPath, "log", "/tmp/aqs-greeter.log", "stderr log path")
 	flag.Parse()
+
+	// Redirect own stderr early so we capture downstream errors even when
+	// greetd does not surface them.
+	if logPath != "" {
+		f, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
+		if err == nil {
+			os.Stderr = f
+			log.SetOutput(f)
+			fmt.Fprintf(f, "\n--- aqs-greeter start pid=%d ---\n", os.Getpid())
+		}
+	}
 
 	if os.Getenv("GREETD_SOCK") == "" {
 		log.Fatal("GREETD_SOCK not set; this binary must run under greetd")
@@ -241,14 +285,33 @@ func main() {
 
 	sess := &session{command: []string{command}, configArg: config}
 
-	qs := exec.Command("quickshell", "-p", qmlPath)
-	qs.Stderr = os.Stderr
-	qs.Stdout = os.Stderr
+	defaultUser := firstHumanUser()
+
+	// Spawn the host compositor for the greeter VT. The compositor's config
+	// is responsible for exec-once'ing quickshell with the greeter QML; the
+	// binary just owns the auth socket and waits.
+	// start-hyprland does not accept -c; pass the config via HYPRLAND_CONFIG
+	// env. Bare Hyprland would also accept the env, so we use it
+	// unconditionally and skip the legacy -c flag entirely.
+	qs := exec.Command(hyprBin)
+	// Suppress compositor stdout/stderr (logs still land in
+	// $XDG_RUNTIME_DIR/hypr/*.log) and detach from the controlling TTY so
+	// warnings printed straight to /dev/tty (e.g. the uwsm/start-hyprland
+	// recommendation) don't bleed onto the bare VT before the greeter layer
+	// surface mounts.
+	qs.Stdin = nil
+	qs.Stdout = nil
+	qs.Stderr = nil
 	qs.Env = append(os.Environ(),
 		"AQS_GREETER_SOCK="+sockPath,
+		"AQS_GREETER_QML="+qmlPath,
+		"AQS_GREETER_DEFAULT_USER="+defaultUser,
 	)
+	if hyprConf != "" {
+		qs.Env = append(qs.Env, "HYPRLAND_CONFIG="+hyprConf)
+	}
 	if err := qs.Start(); err != nil {
-		log.Fatalf("spawn quickshell: %v", err)
+		log.Fatalf("spawn %s: %v", hyprBin, err)
 	}
 
 	done := make(chan struct{})
