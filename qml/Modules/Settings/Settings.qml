@@ -16,8 +16,8 @@ PanelWindow {
     WlrLayershell.namespace: "aqs-settings"
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
-    anchors { top: true; right: true }
-    margins { top: 0; right: 0 }
+    anchors { top: true; left: true }
+    margins { top: 0; left: 0 }
     exclusiveZone: 0
 
     onVisibleChanged: if (visible) _focus.forceActiveFocus()
