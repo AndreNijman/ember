@@ -15,7 +15,8 @@ QtObject {
     function launch(id) {
         for (var i = 0; i < entries.length; i++) {
             if (entries[i].id === id) {
-                _run.command = ["sh", "-c", entries[i].exec]
+                _run.running = false
+                _run.command = ["sh", "-c", "setsid -f " + entries[i].exec + " >/dev/null 2>&1"]
                 _run.running = true
                 _bumpFreq(id)
                 root.ranUsed(id)
