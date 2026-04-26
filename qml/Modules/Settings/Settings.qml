@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell
+import Quickshell.Io
 import Quickshell.Wayland
 import "../../Theme"
 import "../../Atoms" as Atoms
@@ -127,11 +128,24 @@ PanelWindow {
             antialiasing: false
             Text {
                 anchors.centerIn: parent
-                text: "config: ~/.config/aqs/settings.json"
-                color: Theme.ink5
+                text: "edit ~/.config/aqs/settings.json"
+                color: openHover.containsMouse ? Theme.accent : Theme.ink5
                 font.family: Theme.fontUi
                 font.pixelSize: Theme.txs
+                Behavior on color { ColorAnimation { duration: Theme.tFast } }
+            }
+            MouseArea {
+                id: openHover
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: openCfg.running = true
             }
         }
+    }
+
+    Process {
+        id: openCfg
+        command: ["sh", "-c", "xdg-open \"$HOME/.config/aqs/settings.json\" >/dev/null 2>&1 || ${EDITOR:-nano} \"$HOME/.config/aqs/settings.json\""]
     }
 }

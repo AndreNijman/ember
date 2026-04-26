@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import "../../Theme"
 import "../../Services"
 
@@ -11,6 +12,7 @@ Row {
         model: TrayService.items
         delegate: Item {
             required property var modelData
+            id: cell
             width: 16
             height: Theme.barH
             Image {
@@ -29,8 +31,30 @@ Row {
                 font.family: Theme.fontUi
                 font.pixelSize: Theme.t2xs
             }
+            ToolTip {
+                id: tip
+                visible: hover.containsMouse && tipText.length > 0
+                delay: 350
+                text: tipText
+                property string tipText: modelData.tooltipTitle || modelData.title || modelData.id || ""
+                background: Rectangle {
+                    color: Theme.ink2
+                    border.width: Theme.hairW
+                    border.color: Theme.hair
+                    antialiasing: false
+                    radius: 0
+                }
+                contentItem: Text {
+                    text: tip.text
+                    color: Theme.ink8
+                    font.family: Theme.fontUi
+                    font.pixelSize: Theme.t2xs
+                }
+            }
             MouseArea {
+                id: hover
                 anchors.fill: parent
+                hoverEnabled: true
                 acceptedButtons: Qt.LeftButton | Qt.RightButton
                 onClicked: (mouse) => {
                     if (mouse.button === Qt.LeftButton) {

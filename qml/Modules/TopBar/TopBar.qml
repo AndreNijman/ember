@@ -79,8 +79,9 @@ PanelWindow {
         spacing: Theme.s3
 
         Row {
-            spacing: Theme.s1
+            spacing: Theme.s2
             anchors.verticalCenter: parent.verticalCenter
+            LockKeys {}
             NetPill {}
             CpuPill {}
         }

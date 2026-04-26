@@ -223,7 +223,7 @@ PanelWindow {
                 Item {
                     id: imgRow
                     visible: modelData.isBinary
-                    anchors.left: parent.left; anchors.right: delBtn.left
+                    anchors.left: parent.left; anchors.right: idLabel.left
                     anchors.leftMargin: Theme.s3; anchors.rightMargin: Theme.s2
                     anchors.top: parent.top; anchors.topMargin: Theme.s2
                     height: visible ? 80 : 0
@@ -254,7 +254,7 @@ PanelWindow {
                 Column {
                     id: entryCol
                     visible: !modelData.isBinary
-                    anchors.left: parent.left; anchors.right: delBtn.left
+                    anchors.left: parent.left; anchors.right: idLabel.left
                     anchors.leftMargin: Theme.s3; anchors.rightMargin: Theme.s2
                     anchors.top: parent.top; anchors.topMargin: Theme.s2
 
@@ -270,6 +270,16 @@ PanelWindow {
                     }
                 }
 
+                Text {
+                    id: idLabel
+                    anchors.right: delBtn.left; anchors.rightMargin: Theme.s2
+                    anchors.top: parent.top; anchors.topMargin: Theme.s2
+                    text: "#" + modelData.clipId
+                    color: Theme.ink5
+                    font.family: Theme.fontUi
+                    font.pixelSize: Theme.t2xs
+                    font.features: {"tnum": 1}
+                }
                 Text {
                     id: delBtn
                     anchors.right: parent.right; anchors.rightMargin: Theme.s3
@@ -292,7 +302,7 @@ PanelWindow {
                 }
 
                 MouseArea {
-                    anchors.left: parent.left; anchors.right: delBtn.left
+                    anchors.left: parent.left; anchors.right: idLabel.left
                     anchors.top: parent.top; anchors.bottom: parent.bottom
                     onClicked: root.paste(modelData.clipId)
                 }

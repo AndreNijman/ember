@@ -13,8 +13,10 @@ Column {
     Rectangle {
         width: parent.width
         height: Theme.rowH
-        color: Theme.ink2
+        color: hover.containsMouse ? Theme.ink3 : Theme.ink2
         antialiasing: false
+        Behavior on color { ColorAnimation { duration: Theme.tFast } }
+
         Text {
             anchors.left: parent.left
             anchors.leftMargin: Theme.s3
@@ -25,15 +27,40 @@ Column {
             font.pixelSize: Theme.txs
             font.capitalization: Font.AllUppercase
         }
-        Text {
+        Row {
             anchors.right: parent.right
             anchors.rightMargin: Theme.s3
             anchors.verticalCenter: parent.verticalCenter
-            text: root.notifications.length + ""
-            color: Theme.ink5
-            font.family: Theme.fontUi
-            font.pixelSize: Theme.txs
-            font.features: {"tnum": 1}
+            spacing: Theme.s3
+            Text {
+                visible: hover.containsMouse
+                text: "clear"
+                color: Theme.ink5
+                font.family: Theme.fontUi
+                font.pixelSize: Theme.txs
+                MouseArea {
+                    anchors.fill: parent; anchors.margins: -Theme.s1
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        var snap = root.notifications.slice()
+                        for (var i = 0; i < snap.length; i++) NotifService.dismiss(snap[i].id)
+                    }
+                }
+            }
+            Text {
+                anchors.verticalCenter: parent.verticalCenter
+                text: root.notifications.length + ""
+                color: Theme.ink5
+                font.family: Theme.fontUi
+                font.pixelSize: Theme.txs
+                font.features: {"tnum": 1}
+            }
+        }
+        MouseArea {
+            id: hover
+            anchors.fill: parent
+            hoverEnabled: true
+            acceptedButtons: Qt.NoButton
         }
     }
     Repeater {

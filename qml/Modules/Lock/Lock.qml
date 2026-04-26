@@ -83,6 +83,21 @@ PanelWindow {
             font.family: Theme.fontUi
             font.pixelSize: Theme.tmd
         }
+
+        Text {
+            visible: MprisService.hasPlayer && MprisService.title.length > 0
+            text: {
+                var t = MprisService.title
+                var a = MprisService.artist
+                return a.length > 0 ? t + " · " + a : t
+            }
+            color: Theme.ink5
+            font.family: Theme.fontDisplay
+            font.italic: true
+            font.pixelSize: Theme.tlg
+            elide: Text.ElideRight
+            width: 600
+        }
     }
 
     Item {
