@@ -1,5 +1,6 @@
 import QtQuick
 import "../../Theme"
+import "../../Atoms" as Atoms
 
 Rectangle {
     id: root
@@ -9,12 +10,25 @@ Rectangle {
 
     width: parent ? parent.width : 0
     height: Theme.rowH
-    color: Theme.ink1
+    color: hover.hovered ? Theme.ink2 : Theme.ink1
     antialiasing: false
+    Behavior on color { ColorAnimation { duration: Theme.tFast } }
 
     // Allow `input: <component>` declarative property
     property Item input: null
     onInputChanged: if (input) input.parent = inputSlot
+
+    Atoms.Hover {
+        id: hover
+        anchors.fill: parent
+        cursorShape: root.input && root.input.activeFocusOnTab ? Qt.IBeamCursor : Qt.PointingHandCursor
+        onClicked: {
+            if (root.input && root.input.forceActiveFocus)
+                root.input.forceActiveFocus()
+            else if (root.input && root.input.toggled)
+                root.input.toggled(!root.input.on)
+        }
+    }
 
     Text {
         anchors.left: parent.left; anchors.leftMargin: Theme.s3

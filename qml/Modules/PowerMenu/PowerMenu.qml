@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Wayland
 import Quickshell.Io
 import "../../Theme"
+import "../../Atoms" as Atoms
 import "../../Services"
 
 PanelWindow {
@@ -95,38 +96,41 @@ PanelWindow {
         property bool danger: false
         signal activated()
 
-        width: 140
+        width: 110
         height: 140
-        color: hover.containsMouse ? Theme.ink2 : Theme.ink1
+        color: hover.hovered ? Theme.ink2 : Theme.ink1
         border.width: Theme.hairW
-        border.color: hover.containsMouse ? (cell.danger ? Theme.err : Theme.accent) : Theme.hair
+        border.color: hover.hovered ? (cell.danger ? Theme.err : Theme.accent) : Theme.hair
         antialiasing: false
+        Behavior on color        { ColorAnimation { duration: Theme.tFast } }
+        Behavior on border.color { ColorAnimation { duration: Theme.tFast } }
 
         Column {
             anchors.centerIn: parent
-            spacing: Theme.s2
-            Text {
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: cell.label
-                color: hover.containsMouse ? (cell.danger ? Theme.err : Theme.accent) : Theme.ink8
-                font.family: Theme.fontUi
-                font.pixelSize: Theme.tmd
-            }
+            spacing: Theme.s3
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
                 visible: cell.hint.length > 0
                 text: cell.hint
-                color: Theme.ink5
+                color: hover.hovered ? Theme.ink7 : Theme.ink5
                 font.family: Theme.fontUi
                 font.pixelSize: Theme.t2xs
+                font.letterSpacing: 0.08 * Theme.t2xs
+                Behavior on color { ColorAnimation { duration: Theme.tFast } }
+            }
+            Text {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: cell.label
+                color: hover.hovered ? (cell.danger ? Theme.err : Theme.accent) : Theme.ink8
+                font.family: Theme.fontUi
+                font.pixelSize: Theme.tmd
+                Behavior on color { ColorAnimation { duration: Theme.tFast } }
             }
         }
 
-        MouseArea {
+        Atoms.Hover {
             id: hover
             anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
             onClicked: cell.activated()
         }
     }

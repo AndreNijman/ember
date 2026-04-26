@@ -83,7 +83,6 @@ PanelWindow {
             anchors.verticalCenter: parent.verticalCenter
             NetPill {}
             CpuPill {}
-            RamPill {}
         }
 
         Atoms.Hairline {

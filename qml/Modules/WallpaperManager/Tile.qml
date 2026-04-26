@@ -26,9 +26,13 @@ Item {
     Rectangle {
         anchors.fill: parent
         color: "transparent"
-        border.width: root.active ? 2 : root.isCurrentWallpaper ? 1 : (hover.containsMouse ? Theme.hairW : 0)
-        border.color: root.active ? Theme.accent : root.isCurrentWallpaper ? Theme.accent : Theme.hair
+        border.width: root.active ? 2 : Theme.hairW
+        border.color: root.active ? Theme.accent
+                     : root.isCurrentWallpaper ? Theme.accent
+                     : hover.containsMouse ? Theme.hair
+                     : Theme.hairDim
         antialiasing: false
+        Behavior on border.color { ColorAnimation { duration: Theme.tFast } }
     }
 
     MouseArea {
