@@ -255,8 +255,9 @@ PanelWindow {
                 anchors.centerIn: parent
                 text: "no events"
                 color: Theme.ink5
-                font.family: Theme.fontUi
-                font.pixelSize: Theme.txs
+                font.family: Theme.fontDisplay
+                font.italic: true
+                font.pixelSize: Theme.tsm
             }
         }
 

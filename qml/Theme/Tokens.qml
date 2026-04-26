@@ -15,13 +15,17 @@ QtObject {
 
     // --- hairlines -----------------------------------------------------
     readonly property color hair:    "#2A2E33"
-    readonly property color hairDim: "#1F2226"
+    readonly property color hairDim: "#181A1D"
     readonly property int   hairW:   1
 
     // --- accent --------------------------------------------------------
     readonly property color accent:    "#F2A33C"
     readonly property color accentDim: Qt.rgba(0.949, 0.639, 0.235, 0.32)
     readonly property color accentFg:  "#0E0F11"
+
+    // --- brand (IdentityGlyph idle vs hover) ---------------------------
+    readonly property color brand:      "#E8EAEC"
+    readonly property color brandHover: "#F2A33C"
 
     // --- status --------------------------------------------------------
     readonly property color ok:   "#6FB37A"
@@ -66,7 +70,7 @@ QtObject {
     // --- motion (ms) ---------------------------------------------------
     readonly property int tFast: 120
     readonly property int tMed:  240
-    readonly property int tSlow: 260
+    readonly property int tSlow: 320
     //  QML has no cubic-bezier token type; consumers use Easing.BezierSpline
     //  with the four control points below. (0.2,0) -> (0,1) shape.
     readonly property var easeCubic: [0.2, 0, 0, 1]

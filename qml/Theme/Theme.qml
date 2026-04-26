@@ -26,6 +26,9 @@ QtObject {
     readonly property color accentDim: Tokens.accentDim
     readonly property color accentFg:  Tokens.accentFg
 
+    readonly property color brand:      Tokens.brand
+    readonly property color brandHover: Tokens.brandHover
+
     readonly property color ok:   Tokens.ok
     readonly property color warn: Tokens.warn
     readonly property color err:  Tokens.err

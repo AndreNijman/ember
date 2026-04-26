@@ -130,8 +130,9 @@ PanelWindow {
                 anchors.centerIn: parent
                 text: "no notifications"
                 color: Theme.ink5
-                font.family: Theme.fontUi
-                font.pixelSize: Theme.tsm
+                font.family: Theme.fontDisplay
+                font.italic: true
+                font.pixelSize: Theme.tlg
             }
         }
     }
