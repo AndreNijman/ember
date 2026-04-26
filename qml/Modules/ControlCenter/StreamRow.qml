@@ -18,13 +18,23 @@ Item {
     readonly property real vol: node && node.audio ? node.audio.volume : 0.0
     readonly property bool isMuted: node && node.audio ? node.audio.muted : false
 
+    // Hairline rail visually re-parents the stream rows under the device
+    // they belong to without printing yet another dot.
+    Rectangle {
+        anchors.left: parent.left
+        anchors.leftMargin: Theme.s4
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        width: Theme.hairW
+        color: Theme.hairDim
+        antialiasing: false
+    }
+
     Row {
         anchors.fill: parent
-        anchors.leftMargin: Theme.s3
+        anchors.leftMargin: Theme.s4 + Theme.s3
         anchors.rightMargin: Theme.s3
         spacing: Theme.s2
-
-        Rectangle { width: 4; height: 4; anchors.verticalCenter: parent.verticalCenter; color: "transparent" }
 
         Text {
             width: Math.min(implicitWidth, parent.width * 0.4)

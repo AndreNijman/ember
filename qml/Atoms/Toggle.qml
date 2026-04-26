@@ -15,6 +15,8 @@ Rectangle {
     border.width: Theme.hairW
     antialiasing: false
     radius: 0
+    Behavior on color        { ColorAnimation { duration: Theme.tFast } }
+    Behavior on border.color { ColorAnimation { duration: Theme.tFast } }
 
     Rectangle {
         width: 8; height: 8
@@ -22,7 +24,8 @@ Rectangle {
         y: (parent.height - height) / 2
         color: root.on ? Theme.accentFg : Theme.ink7
         antialiasing: false
-        Behavior on x { NumberAnimation { duration: Theme.tFast; easing.type: Easing.OutCubic } }
+        Behavior on x     { NumberAnimation { duration: Theme.tFast; easing.type: Easing.OutCubic } }
+        Behavior on color { ColorAnimation  { duration: Theme.tFast } }
     }
     MouseArea {
         anchors.fill: parent

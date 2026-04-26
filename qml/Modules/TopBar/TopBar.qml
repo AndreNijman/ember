@@ -76,26 +76,30 @@ PanelWindow {
         id: rightCluster
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
-        spacing: Theme.s2
-        NetPill {}
-        CpuPill {}
-        RamPill {}
+        spacing: Theme.s3
+
+        Row {
+            spacing: Theme.s1
+            anchors.verticalCenter: parent.verticalCenter
+            NetPill {}
+            CpuPill {}
+            RamPill {}
+        }
+
         Atoms.Hairline {
             orientation: Qt.Vertical
             height: Theme.barH - Theme.s2 * 2
             anchors.verticalCenter: parent.verticalCenter
             dim: true
         }
-        Vpn {}
-        Network {}
-        Volume {}
-        Battery {}
-        Rectangle {
-            visible: NotifService.items.length > 0 && !NotifService.dnd
-            width: 4; height: 4
+
+        Row {
+            spacing: Theme.s1
             anchors.verticalCenter: parent.verticalCenter
-            color: Theme.accent
-            antialiasing: false
+            Vpn {}
+            Network {}
+            Volume {}
+            Battery {}
         }
     }
 

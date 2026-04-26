@@ -1,5 +1,6 @@
 import QtQuick
 import "../../Theme"
+import "../../Atoms" as Atoms
 import "../../Services"
 
 Item {
@@ -12,18 +13,16 @@ Item {
         id: label
         anchors.centerIn: parent
         text: "Ember"
-        color: hover.containsMouse ? Theme.ink8 : Theme.accent
+        color: hover.hovered ? Theme.brandHover : Theme.brand
         font.family: Theme.fontUi
         font.pixelSize: Theme.tsm
         font.weight: Font.Bold
+        Behavior on color { ColorAnimation { duration: Theme.tFast } }
     }
 
-    MouseArea {
+    Atoms.Hover {
         id: hover
         anchors.fill: parent
-        hoverEnabled: true
-        cursorShape: Qt.PointingHandCursor
-        acceptedButtons: Qt.LeftButton | Qt.RightButton
         onClicked: (mouse) => {
             if (mouse.button === Qt.RightButton) Ipc.togglePowerMenu()
             else Ipc.toggleSettings()

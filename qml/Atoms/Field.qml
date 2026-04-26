@@ -18,5 +18,6 @@ TextField {
         border.color: root.activeFocus ? Theme.accent : Theme.hair
         radius: 0
         antialiasing: false
+        Behavior on border.color { ColorAnimation { duration: Theme.tFast } }
     }
 }
