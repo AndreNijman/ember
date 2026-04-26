@@ -63,5 +63,28 @@ Item {
                 isDefault: AudioService.sink === modelData
             }
         }
+
+        Item {
+            visible: AudioService.streams.length > 0
+            width: parent.width
+            height: Theme.rowH
+            Text {
+                anchors.left: parent.left; anchors.leftMargin: Theme.s3
+                anchors.verticalCenter: parent.verticalCenter
+                text: "PER-APP"
+                color: Theme.ink6
+                font.family: Theme.fontUi
+                font.pixelSize: Theme.t2xs
+                font.letterSpacing: 0.08 * Theme.t2xs
+            }
+        }
+
+        Repeater {
+            model: AudioService.streams
+            StreamRow {
+                width: root.width
+                node: modelData
+            }
+        }
     }
 }

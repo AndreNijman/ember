@@ -2,6 +2,7 @@ module ControlCenter
 ControlCenter    1.0 ControlCenter.qml
 ToggleTile       1.0 ToggleTile.qml
 AudioRow         1.0 AudioRow.qml
+StreamRow        1.0 StreamRow.qml
 AudioOutputPanel 1.0 AudioOutputPanel.qml
 AudioInputPanel  1.0 AudioInputPanel.qml
 PowerRow         1.0 PowerRow.qml

@@ -1,0 +1,4 @@
+module Settings
+Settings    1.0 Settings.qml
+Section     1.0 Section.qml
+SettingRow  1.0 SettingRow.qml

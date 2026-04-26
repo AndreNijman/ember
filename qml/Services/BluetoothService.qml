@@ -29,4 +29,16 @@ QtObject {
     function disconnectDevice(dev) {
         if (dev) dev.connected = false
     }
+    function pairDevice(dev) {
+        if (dev && dev.pair) dev.pair()
+    }
+    function forgetDevice(dev) {
+        if (dev && dev.forget) dev.forget()
+    }
+    function togglePower() {
+        setPowered(!powered)
+    }
+    function trustDevice(dev) {
+        if (dev) dev.trusted = true
+    }
 }

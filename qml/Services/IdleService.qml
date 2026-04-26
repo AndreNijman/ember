@@ -8,8 +8,8 @@ QtObject {
     id: root
 
     property bool inhibited: false
-    property int dpmsTimeoutSec: 180
-    property int lockTimeoutSec: 300
+    property int dpmsTimeoutSec: SettingsService.dpmsTimeoutSec
+    property int lockTimeoutSec: SettingsService.lockTimeoutSec
 
     property bool dpmsOff: false
 

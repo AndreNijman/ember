@@ -13,7 +13,12 @@ QtObject {
     signal toastPosted(var notification)
 
     property NotificationServer _server: NotificationServer {
-        keepOnReload: false
+        // Survives `aqs ipc shell restart` (in-process reload). Across full
+        // process restart notifications are still lost — DBus daemon
+        // tracking is the only place they live; we don't keep an external
+        // JSON because re-rendered placeholder objects can't `invoke()`
+        // actions back to the originating client anyway.
+        keepOnReload: true
         imageSupported: true
         actionsSupported: true
         bodyMarkupSupported: true

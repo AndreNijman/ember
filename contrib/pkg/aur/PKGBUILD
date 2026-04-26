@@ -1,0 +1,43 @@
+# Maintainer: Andre Nijman <andre.perth.2010@gmail.com>
+pkgname=ember
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Quickshell + Go desktop shell for Hyprland (the 'aqs' shell)"
+arch=('x86_64')
+url="https://github.com/AndreNijman/ember"
+license=('MIT')
+depends=(
+    'quickshell-git'
+    'hyprland'
+    'pipewire'
+    'wireplumber'
+    'networkmanager'
+    'bluez' 'bluez-utils'
+    'brightnessctl'
+    'cliphist'
+    'wl-clipboard'
+    'playerctl'
+)
+optdepends=(
+    'qalculate-gtk: launcher = calculator mode'
+    'gcalcli: calendar agenda + event creation'
+    'hyprshot: screenshot keybinds'
+    'hyprpicker: color picker keybind'
+    'greetd: required to use aqs-greeter as the login screen'
+    'scdoc: rebuild manpage'
+)
+makedepends=('go' 'scdoc' 'git')
+source=("$pkgname::git+https://github.com/AndreNijman/ember.git#tag=v$pkgver")
+sha256sums=('SKIP')
+
+build() {
+    cd "$pkgname"
+    make build man
+}
+
+package() {
+    cd "$pkgname"
+    make install PREFIX=/usr DESTDIR="$pkgdir"
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+    install -Dm644 README.md "$pkgdir/usr/share/doc/$pkgname/README.md"
+}
