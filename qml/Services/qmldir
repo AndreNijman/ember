@@ -16,4 +16,5 @@ singleton CalcService        1.0 CalcService.qml
 singleton TrayService        1.0 TrayService.qml
 singleton MprisService       1.0 MprisService.qml
 singleton SingBoxService     1.0 SingBoxService.qml
+singleton SystemMonitorService 1.0 SystemMonitorService.qml
 singleton Ipc                1.0 Ipc.qml

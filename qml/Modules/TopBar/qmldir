@@ -13,3 +13,6 @@ Vpn             1.0 Vpn.qml
 TrayStrip       1.0 TrayStrip.qml
 TrayMenu        1.0 TrayMenu.qml
 NowPlaying      1.0 NowPlaying.qml
+CpuPill         1.0 CpuPill.qml
+RamPill         1.0 RamPill.qml
+NetPill         1.0 NetPill.qml

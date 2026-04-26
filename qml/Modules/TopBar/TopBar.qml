@@ -77,6 +77,15 @@ PanelWindow {
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
         spacing: Theme.s2
+        NetPill {}
+        CpuPill {}
+        RamPill {}
+        Atoms.Hairline {
+            orientation: Qt.Vertical
+            height: Theme.barH - Theme.s2 * 2
+            anchors.verticalCenter: parent.verticalCenter
+            dim: true
+        }
         Vpn {}
         Network {}
         Volume {}
