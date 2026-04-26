@@ -35,28 +35,26 @@ PanelWindow {
     Process {
         id: _load
         command: ["sh", "-c", "cliphist list 2>/dev/null | head -100"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                var lines = (this.text || "").split("\n")
-                var out = []
-                var binaryIds = []
-                for (var i = 0; i < lines.length; i++) {
-                    var line = lines[i]
-                    var tab = line.indexOf("\t")
-                    if (tab < 0) continue
-                    var id = line.substring(0, tab).trim()
-                    var content = line.substring(tab + 1)
-                    var isBinary = content.startsWith("[[ binary data")
-                    out.push({
-                        clipId: id,
-                        text: isBinary ? content : content.substring(0, 200),
-                        isBinary: isBinary
-                    })
-                    if (isBinary) binaryIds.push(id)
-                }
-                root.entries = out
-                if (binaryIds.length > 0) root._decodeThumbs(binaryIds)
+        property var _lines: []
+        onRunningChanged: if (running) _lines = []
+        stdout: SplitParser {
+            onRead: (line) => { _load._lines.push(line) }
+        }
+        onExited: {
+            var out = []
+            var binaryIds = []
+            for (var i = 0; i < _lines.length; i++) {
+                var line = _lines[i]
+                var tab = line.indexOf("\t")
+                if (tab < 0) continue
+                var id = line.substring(0, tab).trim()
+                var content = line.substring(tab + 1)
+                var isBinary = content.startsWith("[[ binary data")
+                out.push({ clipId: id, text: isBinary ? content : content.substring(0, 200), isBinary: isBinary })
+                if (isBinary) binaryIds.push(id)
             }
+            root.entries = out
+            if (binaryIds.length > 0) root._decodeThumbs(binaryIds)
         }
     }
 
@@ -73,21 +71,24 @@ PanelWindow {
     Process {
         id: _thumbProc
         command: ["true"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                var lines = (this.text || "").split("\n")
-                var m = {}
-                for (var k in root._thumbs) m[k] = root._thumbs[k]
-                for (var i = 0; i < lines.length; i++) {
-                    var sep = lines[i].indexOf(":")
-                    if (sep < 0) continue
-                    var id = lines[i].substring(0, sep)
-                    var path = lines[i].substring(sep + 1)
-                    m[id] = "file://" + path
-                }
-                root._thumbs = m
-                root._thumbGen++
+        property var _lines: []
+        onRunningChanged: if (running) _lines = []
+        stdout: SplitParser {
+            onRead: (line) => { _thumbProc._lines.push(line) }
+        }
+        onExited: {
+            var m = {}
+            for (var k in root._thumbs) m[k] = root._thumbs[k]
+            for (var i = 0; i < _thumbProc._lines.length; i++) {
+                var line = _thumbProc._lines[i]
+                var sep = line.indexOf(":")
+                if (sep < 0) continue
+                var id = line.substring(0, sep)
+                var path = line.substring(sep + 1)
+                m[id] = "file://" + path
             }
+            root._thumbs = m
+            root._thumbGen++
         }
     }
 
