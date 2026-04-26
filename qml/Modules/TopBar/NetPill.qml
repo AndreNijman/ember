@@ -11,8 +11,8 @@ Item {
     Text {
         id: label
         anchors.centerIn: parent
-        text: "↓" + SystemMonitorService.formatRate(SystemMonitorService.netRxBps) +
-              " ↑" + SystemMonitorService.formatRate(SystemMonitorService.netTxBps)
+        text: SystemMonitorService.formatRate(SystemMonitorService.netRxBps) + " · " +
+              SystemMonitorService.formatRate(SystemMonitorService.netTxBps)
         color: Theme.ink5
         font.family: Theme.fontUi
         font.pixelSize: Theme.tsm

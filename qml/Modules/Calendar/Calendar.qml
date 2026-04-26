@@ -308,6 +308,17 @@ PanelWindow {
                     spacing: Theme.s3
                     anchors.right: parent.right
                     Text {
+                        text: "cancel"
+                        color: Theme.ink5
+                        font.family: Theme.fontUi
+                        font.pixelSize: Theme.txs
+                        MouseArea {
+                            anchors.fill: parent; anchors.margins: -Theme.s1
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: { root.addOpen = false; titleField.text = "" }
+                        }
+                    }
+                    Text {
                         text: "save"
                         color: Theme.accent
                         font.family: Theme.fontUi

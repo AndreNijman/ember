@@ -1,18 +1,17 @@
 import QtQuick
 import "../../Theme"
 
-Rectangle {
+Item {
     property string title: ""
     width: parent ? parent.width : 0
-    height: Theme.rowH
-    color: Theme.ink2
-    antialiasing: false
+    height: Theme.s5 + Theme.rowH * 0.6
 
     Text {
         anchors.left: parent.left; anchors.leftMargin: Theme.s3
-        anchors.verticalCenter: parent.verticalCenter
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: Theme.s2
         text: parent.title
-        color: Theme.ink6
+        color: Theme.ink5
         font.family: Theme.fontUi
         font.pixelSize: Theme.t2xs
         font.letterSpacing: 0.08 * Theme.t2xs
