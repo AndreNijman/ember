@@ -19,4 +19,5 @@ singleton SingBoxService     1.0 SingBoxService.qml
 singleton SystemMonitorService 1.0 SystemMonitorService.qml
 singleton SettingsService    1.0 SettingsService.qml
 singleton LockKeysService    1.0 LockKeysService.qml
+singleton ColorService       1.0 ColorService.qml
 singleton Ipc                1.0 Ipc.qml

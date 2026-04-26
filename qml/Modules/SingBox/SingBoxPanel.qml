@@ -142,6 +142,8 @@ PanelWindow {
                 return Theme.ok
             }
             antialiasing: false
+            Behavior on color        { ColorAnimation { duration: Theme.tFast } }
+            Behavior on border.color { ColorAnimation { duration: Theme.tFast } }
 
             Text {
                 anchors.centerIn: parent
@@ -176,6 +178,7 @@ PanelWindow {
             border.width: Theme.hairW
             border.color: Theme.err
             antialiasing: false
+            Behavior on color { ColorAnimation { duration: Theme.tFast } }
 
             Text {
                 anchors.centerIn: parent
