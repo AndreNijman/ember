@@ -1,122 +1,158 @@
 # ember
 
-A Quickshell/QML desktop shell for Hyprland on Arch Linux. Built to replace
-DMS with a sharper-edged, monochrome aesthetic: 1px hairlines, no rounded
-corners, a single amber accent, no blur or shadow.
+A Quickshell + Go desktop shell for Hyprland on Arch Linux. Sharp-edged,
+monochrome aesthetic — 1px hairlines, no rounded corners, single accent
+color, no blur or shadow.
 
-The binary is `aqs` (historical; stays for keybind compat).
+The CLI binary is `aqs`; the greeter binary is `aqs-greeter`.
 
-Status: personal daily driver, pre-release. Expect rough edges.
+## Features
 
-## What's in it
+- **Bar** — workspaces, focused window, clock, MPRIS now-playing, system
+  tray, CPU / RAM / network throughput pills, VPN, network, volume, battery
+- **Launcher** (`Alt+Space`) — apps + `=` calc + `>` shell + `:` window
+  switcher + `?` clipboard
+- **Control center** (`Super+K`) — Wi-Fi (with WPA password prompt),
+  Bluetooth (scan + pair + forget + connect), audio in/out + per-app mixer,
+  brightness, power profiles, DND, idle inhibitor, power row
+- **Notification center** (`Super+N`) — toasts + history, grouping, DND,
+  survives shell reload
+- **Lock screen** (`Super+L`) — wayland session-lock, PAM auth, capslock detect
+- **Greeter** — `aqs-greeter` integrates with greetd, themed to match
+- **OSD** — volume, brightness, mic-mute on key presses
+- **Clipboard** (`Super+V`) — cliphist-backed history with image previews
+- **Wallpaper picker** (`Super+B`) — thumbnails grid, per-workspace assign
+- **Calendar** — gcalcli agenda + inline event creation
+- **Overview** (`Super+Tab`) — workspace/window grid
+- **Settings** (`aqs ipc settings open`) — `~/.config/aqs/settings.json`
+  backed configuration UI
+- **Power menu** (`aqs ipc powermenu open`) — full-screen lock / logout /
+  suspend / reboot / shutdown
+- **Cheat sheet** (`Super+/`) — parses your `~/.config/hypr/aqs/binds.conf`
+- **SingBox VPN** panel — for the original author's tunnel; remove if not used
 
-- Top bar: workspaces, focused-window title, clock, battery, tray
-- Launcher: prefix+substring search over `.desktop` entries (system, user, flatpak)
-- Control Center: wifi / bluetooth / dnd / idle-hold toggles, audio, brightness,
-  battery, power-profile segmented selector, power controls (lock / suspend /
-  reboot / off / logout)
-- Notification Center: live notifications via Quickshell
-- OSD: volume and brightness feedback on media keys
-- Lock screen: wayland session-lock with PAM authentication (caps-lock detect,
-  auth-fail flash)
-- Wallpaper manager: `mpvpaper` per output
-- Clipboard: cliphist-backed history panel with text + image thumbnails,
-  search, paste, delete, wipe (requires `cliphist.service` user unit enabled —
-  see Runtime)
-- Keybinds: overlay cheat sheet for Hyprland bindings
-- Calendar: month grid popover from top bar clock
-- Overview: workspace/window grid
-- SingBox: VLESS+REALITY tunnel toggle panel (see projects/sing-box-vpn)
+## Install
 
-## Requirements
+### Arch (AUR)
 
-- Hyprland (Wayland)
-- Quickshell 0.2.1+
-- Go 1.21+ (for the `aqs` CLI)
-- PAM development headers (`pam` on Arch)
-- Runtime helpers: `brightnessctl`, `nmcli`, `powerprofilesctl`, `playerctl`,
-  `qalc`, `mpvpaper`, `grim`, `cliphist`, `wl-clipboard`
+```sh
+paru -S ember           # or yay -S ember
+systemctl --user enable --now aqs.service
+```
 
-## Runtime
+### From source
 
-Enable the Arch-shipped cliphist watcher so the Clipboard panel captures new
-copies (it only reads cliphist; it does not watch the clipboard itself):
+```sh
+git clone https://github.com/AndreNijman/ember.git
+cd ember
+make all
+sudo make install                   # installs to /usr/local
+systemctl --user enable --now aqs.service
+```
+
+### First-run config
+
+Copy the starter Hyprland config in if you don't already have one:
+
+```sh
+mkdir -p ~/.config/hypr/aqs
+cp /usr/local/share/aqs/contrib/hypr/hyprland.conf.example  ~/.config/hypr/hyprland.conf
+cp /usr/local/share/aqs/contrib/hypr/aqs/binds.conf         ~/.config/hypr/aqs/binds.conf
+```
+
+Then enable the cliphist watcher so the clipboard panel sees new copies:
 
 ```sh
 systemctl --user enable --now cliphist.service
 ```
 
-Stock unit covers text. For image capture add an override or a second unit
-invoking `wl-paste --type image --watch cliphist store`.
-
-## Build
+### Greeter (optional)
 
 ```sh
-make all            # go build + vet + qmllint
-make ipc-test       # round-trip check
-make smoke          # 30s quickshell render soak
+sudo /usr/local/share/aqs/scripts/install-greeter.sh
 ```
 
-The Go binary lands in `build/aqs`. Install to `~/.local/bin/aqs` if you want
-it on PATH.
+This swaps `/etc/greetd/config.toml` to launch `aqs-greeter`. Backups of
+the previous config are saved with a `.bak-pre-aqs-<timestamp>` suffix.
+Revert with `--uninstall`.
 
-## Run
+## Requirements
 
-As a systemd user service:
+| Component               | Why                                        |
+|-------------------------|--------------------------------------------|
+| `hyprland`              | Compositor                                  |
+| `quickshell-git` 0.2.1+ | UI runtime                                  |
+| `pipewire`, `wireplumber` | Audio                                     |
+| `networkmanager`        | Wi-Fi                                       |
+| `bluez`, `bluez-utils`  | Bluetooth                                   |
+| `brightnessctl`         | Backlight                                   |
+| `cliphist`, `wl-clipboard` | Clipboard                                |
+| `playerctl`             | Media keys                                  |
+| `qalculate-gtk`         | Launcher `=` calc mode                      |
+| `gcalcli`               | Calendar agenda + add                       |
+| `hyprshot`, `hyprpicker` | Screenshot + color picker keybinds         |
+| `greetd` + `start-hyprland` | Greeter (optional)                      |
 
-```sh
-systemctl --user enable --now aqs.service
-```
-
-Or directly:
-
-```sh
-quickshell -p qml/shell.qml
-```
+Build deps: `go 1.21+`, `scdoc` (manpage), PAM headers.
 
 ## IPC
 
-The `aqs` CLI wraps `qs ipc call` and targets QML IpcHandlers in the running
-shell. Bind these from Hyprland:
-
 ```
-aqs ipc launcher toggle
-aqs ipc control toggle
-aqs ipc notifications toggle
-aqs ipc lock engage
-aqs ipc audio mute
-aqs ipc audio increment 5
-aqs ipc brightness increment 5
-aqs ipc workspace focus 3
-aqs ipc clipboard toggle
-aqs ipc keybinds toggle
-aqs ipc overview toggle
-aqs ipc singbox toggle
-```
-
-Full target list: `shell`, `launcher`, `control`, `notifications`, `lock`,
-`osd`, `workspace`, `wallpaper`, `audio`, `brightness`, `keybinds`, `singbox`,
-`clipboard`, `overview`.
-
-## Layout
-
-```
-cmd/aqs/              Go CLI entry
-internal/             proto, socket, ipc, pam
-qml/
-  shell.qml           ShellRoot entry
-  Theme/              Tokens / Theme / Fonts singletons
-  Atoms/              13 primitives
-  Services/           19 singletons (Hyprland, Audio, Network, ...)
-  Modules/            per-surface trees (TopBar, Launcher, ControlCenter,
-                      NotificationCenter, OSD, Lock, WallpaperManager,
-                      Clipboard, Keybinds, Calendar, Overview, SingBox)
-scripts/              smoke + ipc-roundtrip
+aqs ipc shell version
+aqs ipc launcher       toggle | show | hide
+aqs ipc control        toggle | show | hide
+aqs ipc notifications  toggle | clearAll | setDnd <true|false>
+aqs ipc lock           engage
+aqs ipc audio          mute | micmute | increment <n> | decrement <n>
+aqs ipc brightness     increment <n> | decrement <n>
+aqs ipc workspace      focus <id>
+aqs ipc wallpaper      toggle | show | hide | setForWorkspace <ws> <path> | setAll <path>
+aqs ipc clipboard      toggle | show | hide
+aqs ipc keybinds       toggle | show | hide
+aqs ipc overview       toggle | show | hide
+aqs ipc singbox        toggle | show | hide | connect
+aqs ipc powermenu      toggle | show | hide
+aqs ipc settings       toggle | show | hide | open | set <key> <value>
 ```
 
-See `BUILD_NOTES.md` for the backend status of each service (real vs stub)
-and the known gaps.
+`man aqs` after install for the full reference.
+
+## Configuration
+
+`~/.config/aqs/settings.json` — written by the in-shell Settings panel,
+hand-editable for fields not yet exposed in the UI:
+
+```json
+{
+  "dpmsTimeoutSec": 180,
+  "lockTimeoutSec": 300,
+  "dndDefault": false,
+  "barShowCpu": true,
+  "barShowRam": true,
+  "barShowNet": true,
+  "barShowVpn": true
+}
+```
+
+## Troubleshooting
+
+- **No notifications appear** — another notification daemon (mako, dunst,
+  swaync) is holding `org.freedesktop.Notifications`. Stop and disable it.
+- **Clipboard panel empty** — `systemctl --user enable --now cliphist.service`.
+  For images, also run `wl-paste --type image --watch cliphist store`.
+- **WiFi password modal does nothing** — check that `nmcli` works on its
+  own (`nmcli dev wifi connect SSID password XXX`).
+- **Greeter loops on restart** — `journalctl -u greetd -n 100` and
+  `cat /tmp/aqs-greeter.log`. The most common cause is a missing helper
+  binary (`start-hyprland`, `quickshell`).
+- **Bar pills missing after upgrade** — Settings panel → toggle the
+  show* options, or edit `~/.config/aqs/settings.json` directly.
+
+## Hacking
+
+See [`docs/HACKING.md`](docs/HACKING.md) for the layout of the QML tree,
+service architecture, and how to add a new module.
 
 ## License
 
-Unlicensed personal project. Copy freely; no warranty.
+MIT — see [LICENSE](LICENSE).

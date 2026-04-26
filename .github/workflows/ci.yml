@@ -1,0 +1,32 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-arch:
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+    steps:
+      - name: Install dependencies
+        run: |
+          pacman -Syu --noconfirm
+          pacman -S --noconfirm --needed \
+            base-devel git go scdoc \
+            qt6-base qt6-declarative \
+            quickshell-git || \
+            (echo "quickshell-git not in core repos; building from AUR" && \
+             pacman -S --noconfirm --needed sudo fakeroot && \
+             useradd -m -G wheel build && \
+             echo 'build ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers.d/build && \
+             su - build -c '
+               cd && git clone https://aur.archlinux.org/quickshell-git.git && \
+               cd quickshell-git && makepkg -si --noconfirm
+             ')
+      - uses: actions/checkout@v4
+      - name: Build + vet + lint
+        run: make all
+      - name: Render manpage
+        run: make man

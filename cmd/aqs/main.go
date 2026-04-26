@@ -24,6 +24,9 @@ import (
 	"github.com/AndreNijman/aqs/internal/socket"
 )
 
+// version is set via -ldflags "-X main.version=..." at build time.
+var version string
+
 const usage = `aqs — ember IPC client + helpers
 
 usage:
@@ -52,8 +55,12 @@ func run(args []string) error {
 	}
 	switch args[0] {
 	case "version", "--version", "-v":
-		v := proto.ProtocolVersion
-		fmt.Printf("aqs %d.%d.%d\n", v.Major, v.Minor, v.Patch)
+		if version != "" {
+			fmt.Printf("aqs %s\n", version)
+		} else {
+			v := proto.ProtocolVersion
+			fmt.Printf("aqs %d.%d.%d\n", v.Major, v.Minor, v.Patch)
+		}
 		return nil
 	case "ipc":
 		return runIPC(args[1:])
