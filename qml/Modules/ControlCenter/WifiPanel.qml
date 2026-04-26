@@ -1,5 +1,6 @@
 import QtQuick
 import "../../Theme"
+import "../../Atoms" as Atoms
 import "../../Services"
 
 Item {
@@ -7,7 +8,18 @@ Item {
     implicitHeight: col.implicitHeight
     implicitWidth: parent ? parent.width : 380
 
+    property string promptSsid: ""
+
     Component.onCompleted: NetworkService.scanWifi()
+
+    function _connect(modelData) {
+        if (modelData.active) return
+        if (modelData.security && modelData.security.length > 0) {
+            root.promptSsid = modelData.ssid
+        } else {
+            NetworkService.connectWifi(modelData.ssid, "")
+        }
+    }
 
     Column {
         id: col
@@ -103,9 +115,82 @@ Item {
                 MouseArea {
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                        if (!modelData.active)
-                            NetworkService.connectWifi(modelData.ssid, "")
+                    onClicked: root._connect(modelData)
+                }
+            }
+        }
+    }
+
+    Rectangle {
+        id: promptOverlay
+        visible: root.promptSsid.length > 0
+        anchors.fill: parent
+        color: Qt.rgba(0, 0, 0, 0.7)
+        z: 100
+
+        MouseArea { anchors.fill: parent }
+
+        Column {
+            anchors.centerIn: parent
+            width: parent.width - Theme.s4 * 2
+            spacing: Theme.s2
+
+            Text {
+                text: "connect to " + root.promptSsid
+                color: Theme.ink8
+                font.family: Theme.fontUi
+                font.pixelSize: Theme.tsm
+            }
+            Text {
+                text: "password"
+                color: Theme.ink5
+                font.family: Theme.fontUi
+                font.pixelSize: Theme.t2xs
+                font.letterSpacing: 0.08 * Theme.t2xs
+            }
+            Atoms.Field {
+                id: pwField
+                width: parent.width
+                echoMode: TextInput.Password
+                placeholderText: "WPA passphrase"
+                onVisibleChanged: if (visible) forceActiveFocus()
+                Keys.onReturnPressed: {
+                    NetworkService.connectWifi(root.promptSsid, pwField.text)
+                    root.promptSsid = ""
+                    pwField.text = ""
+                }
+                Keys.onEscapePressed: {
+                    root.promptSsid = ""
+                    pwField.text = ""
+                }
+            }
+            Row {
+                spacing: Theme.s3
+                anchors.right: parent.right
+                Text {
+                    text: "cancel"
+                    color: Theme.ink5
+                    font.family: Theme.fontUi
+                    font.pixelSize: Theme.txs
+                    MouseArea {
+                        anchors.fill: parent; anchors.margins: -Theme.s1
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: { root.promptSsid = ""; pwField.text = "" }
+                    }
+                }
+                Text {
+                    text: "connect"
+                    color: Theme.accent
+                    font.family: Theme.fontUi
+                    font.pixelSize: Theme.txs
+                    MouseArea {
+                        anchors.fill: parent; anchors.margins: -Theme.s1
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            NetworkService.connectWifi(root.promptSsid, pwField.text)
+                            root.promptSsid = ""
+                            pwField.text = ""
+                        }
                     }
                 }
             }

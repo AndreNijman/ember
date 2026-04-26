@@ -1,0 +1,84 @@
+# Example ~/.config/hypr/hyprland.conf for ember.
+# Copy this and the matching aqs/ directory into ~/.config/hypr/.
+
+# ==================
+# MONITOR CONFIG
+# ==================
+monitor = , preferred, auto, auto
+env = AQ_TRACE, 0
+
+# ==================
+# STARTUP
+# ==================
+exec-once = dbus-update-activation-environment --systemd --all
+exec-once = quickshell -p /usr/share/aqs/qml/shell.qml
+exec-once = wl-paste --type text  --watch cliphist store
+exec-once = wl-paste --type image --watch cliphist store
+
+# ==================
+# INPUT
+# ==================
+input {
+    kb_layout = us
+    follow_mouse = 1
+    accel_profile = flat
+    sensitivity = 0
+    touchpad {
+        natural_scroll = yes
+        tap-to-click = true
+        disable_while_typing = true
+        clickfinger_behavior = true
+    }
+}
+
+# ==================
+# LAYOUT
+# ==================
+general {
+    gaps_in = 4
+    gaps_out = 6
+    border_size = 1
+    layout = dwindle
+}
+
+dwindle {
+    preserve_split = true
+}
+
+decoration {
+    rounding = 0
+    active_opacity = 1.0
+    inactive_opacity = 1.0
+    shadow {
+        enabled = false
+    }
+}
+
+animations {
+    enabled = true
+    animation = windowsIn,  1, 3, default
+    animation = windowsOut, 1, 3, default
+    animation = workspaces, 1, 5, default
+    animation = fade,       1, 3, default
+    animation = border,     1, 3, default
+}
+
+misc {
+    disable_hyprland_logo = true
+    disable_splash_rendering = true
+}
+
+# ==================
+# WINDOW RULES
+# ==================
+windowrule = float on, match:class ^(pavucontrol)$
+windowrule = float on, match:class ^(nm-connection-editor)$
+windowrule = float on, match:class ^(blueman-manager)$
+windowrule = float on, match:class ^(org\.gnome\.Calculator)$
+
+layerrule = no_anim on, match:namespace ^(aqs-.*)$
+
+# ==================
+# KEYBINDS
+# ==================
+source = ./aqs/binds.conf
