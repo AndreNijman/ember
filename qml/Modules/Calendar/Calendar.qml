@@ -229,20 +229,26 @@ PanelWindow {
                     required property int index
                     width: grid.width / 7
                     height: 32
-                    visible: index >= grid.offset
-
-                    property int dayNum: index - grid.offset + 1
-                    property string dateKey: root.viewYear + "-" +
-                        ("0" + (root.viewMonth + 1)).slice(-2) + "-" +
-                        ("0" + dayNum).slice(-2)
-                    property bool isToday: dayNum === root._todayDay
+                    // Cells before grid.offset stay laid-out so Grid keeps
+                    // the column alignment (Apr 1 -> Wednesday); their
+                    // content just renders nothing.
+                    property bool inMonth: index >= grid.offset
+                    property int dayNum: inMonth ? (index - grid.offset + 1) : 0
+                    property string dateKey: inMonth
+                        ? (root.viewYear + "-" +
+                           ("0" + (root.viewMonth + 1)).slice(-2) + "-" +
+                           ("0" + dayNum).slice(-2))
+                        : ""
+                    property bool isToday: inMonth
+                                           && dayNum === root._todayDay
                                            && root.viewMonth === root._todayMonth
                                            && root.viewYear === root._todayYear
-                    property bool isSelected: root.selectedDate === dateKey
-                    property var dayEvents: root.eventsByDate[dateKey] || []
+                    property bool isSelected: inMonth && root.selectedDate === dateKey
+                    property var dayEvents: inMonth ? (root.eventsByDate[dateKey] || []) : []
                     property int dotCount: Math.min(dayEvents.length, 3)
 
                     Rectangle {
+                        visible: parent.inMonth
                         anchors.fill: parent
                         anchors.margins: 2
                         color: parent.isSelected ? Theme.ink3
@@ -253,6 +259,7 @@ PanelWindow {
                         Behavior on color { ColorAnimation { duration: Theme.tFast } }
                     }
                     Text {
+                        visible: parent.inMonth
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.top: parent.top
                         anchors.topMargin: 4
@@ -267,7 +274,7 @@ PanelWindow {
                         anchors.bottom: parent.bottom
                         anchors.bottomMargin: 4
                         spacing: 2
-                        visible: parent.dotCount > 0 && !parent.isToday
+                        visible: parent.inMonth && parent.dotCount > 0 && !parent.isToday
                         Repeater {
                             model: parent.parent.dotCount
                             delegate: Rectangle {
@@ -278,7 +285,7 @@ PanelWindow {
                         }
                     }
                     Rectangle {
-                        visible: parent.isToday
+                        visible: parent.inMonth && parent.isToday
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.bottom: parent.bottom
                         anchors.bottomMargin: 4
@@ -290,7 +297,8 @@ PanelWindow {
                     MouseArea {
                         id: hover
                         anchors.fill: parent
-                        hoverEnabled: true
+                        hoverEnabled: parent.inMonth
+                        enabled: parent.inMonth
                         cursorShape: Qt.PointingHandCursor
                         onClicked: root.selectedDate =
                             root.selectedDate === parent.dateKey ? "" : parent.dateKey
