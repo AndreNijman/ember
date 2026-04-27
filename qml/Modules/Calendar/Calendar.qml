@@ -36,37 +36,75 @@ PanelWindow {
     onOpen_Changed: if (open_) _loadEvents()
 
     function _loadEvents() {
+        // Re-issue the gcalcli range whenever the visible month changes so
+        // grid markers + agenda cover the month being viewed plus a small
+        // forward buffer for the agenda list.
+        var first = new Date(viewYear, viewMonth, 1)
+        var last  = new Date(viewYear, viewMonth + 1, 1)
+        var fmt = function(d) {
+            return d.getFullYear() + "-" +
+                   ("0" + (d.getMonth() + 1)).slice(-2) + "-" +
+                   ("0" + d.getDate()).slice(-2)
+        }
+        _gcal.environment = ({
+            "AQS_FROM": fmt(first),
+            "AQS_TO":   fmt(last),
+        })
         _gcal.running = true
     }
 
     function _prevMonth() {
         var d = new Date(viewYear, viewMonth - 1, 1)
         viewDate = d; viewMonth = d.getMonth(); viewYear = d.getFullYear()
+        _loadEvents()
     }
     function _nextMonth() {
         var d = new Date(viewYear, viewMonth + 1, 1)
         viewDate = d; viewMonth = d.getMonth(); viewYear = d.getFullYear()
+        _loadEvents()
+    }
+
+    // Map "YYYY-MM-DD" -> array of events on that day. Drives the grid
+    // event-dot indicator + the agenda list filter when a day is picked.
+    property var eventsByDate: ({})
+    property string selectedDate: ""
+
+    // Agenda below the grid: when a day is picked, show only that day's
+    // events; otherwise show the next 20 events visible in this month.
+    property var filteredEvents: {
+        if (selectedDate.length > 0) return eventsByDate[selectedDate] || []
+        return events.slice(0, 20)
     }
 
     Process {
         id: _gcal
-        command: ["sh", "-c", "gcalcli agenda --tsv --nocolor 2>/dev/null | head -20 || echo ''"]
+        command: ["sh", "-c",
+            "gcalcli agenda --tsv --nocolor --details=calendar \"$AQS_FROM\" \"$AQS_TO\" 2>/dev/null || echo ''"]
         stdout: StdioCollector {
             onStreamFinished: {
                 var lines = (this.text || "").split("\n")
                 var evts = []
+                var byDate = {}
                 for (var i = 0; i < lines.length; i++) {
                     var parts = lines[i].split("\t")
-                    if (parts.length >= 4) {
-                        evts.push({
-                            date: parts[0] || "",
-                            time: parts[1] || "",
-                            endTime: parts[3] || "",
-                            title: parts[4] || parts[3] || ""
-                        })
+                    if (parts.length < 4) continue
+                    var date    = parts[0] || ""
+                    var time    = parts[1] || ""
+                    var endDate = parts[2] || ""
+                    var endTime = parts[3] || ""
+                    var calName = parts.length >= 6 ? (parts[4] || "") : ""
+                    var title   = parts.length >= 6 ? (parts[5] || "")
+                                                   : (parts[4] || "")
+                    var ev = {
+                        date: date, time: time, endTime: endTime,
+                        title: title, calendar: calName,
                     }
+                    evts.push(ev)
+                    if (!byDate[date]) byDate[date] = []
+                    byDate[date].push(ev)
                 }
                 root.events = evts
+                root.eventsByDate = byDate
             }
         }
     }
@@ -178,31 +216,70 @@ PanelWindow {
                 delegate: Item {
                     required property int index
                     width: grid.width / 7
-                    height: 28
+                    height: 32
                     visible: index >= grid.offset
 
                     property int dayNum: index - grid.offset + 1
+                    property string dateKey: root.viewYear + "-" +
+                        ("0" + (root.viewMonth + 1)).slice(-2) + "-" +
+                        ("0" + dayNum).slice(-2)
                     property bool isToday: dayNum === root._todayDay
                                            && root.viewMonth === root._todayMonth
                                            && root.viewYear === root._todayYear
+                    property bool isSelected: root.selectedDate === dateKey
+                    property var dayEvents: root.eventsByDate[dateKey] || []
+                    property int dotCount: Math.min(dayEvents.length, 3)
 
+                    Rectangle {
+                        anchors.fill: parent
+                        anchors.margins: 2
+                        color: parent.isSelected ? Theme.ink2
+                             : (hover.containsMouse ? Qt.rgba(1,1,1,0.04) : "transparent")
+                        antialiasing: false
+                        Behavior on color { ColorAnimation { duration: Theme.tFast } }
+                    }
                     Text {
-                        anchors.centerIn: parent
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        anchors.top: parent.top
+                        anchors.topMargin: 4
                         text: parent.dayNum
                         color: parent.isToday ? Theme.accent : Theme.ink8
                         font.family: Theme.fontUi
                         font.pixelSize: Theme.txs
                         font.features: {"tnum": 1}
                     }
+                    Row {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        anchors.bottom: parent.bottom
+                        anchors.bottomMargin: 4
+                        spacing: 2
+                        visible: parent.dotCount > 0 && !parent.isToday
+                        Repeater {
+                            model: parent.parent.dotCount
+                            delegate: Rectangle {
+                                width: 3; height: 3
+                                color: Theme.ink6
+                                antialiasing: false
+                            }
+                        }
+                    }
                     Rectangle {
                         visible: parent.isToday
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.bottom: parent.bottom
-                        anchors.bottomMargin: 2
+                        anchors.bottomMargin: 4
                         width: parent.width - Theme.s2 * 2
                         height: 2
                         color: Theme.accent
                         antialiasing: false
+                    }
+                    MouseArea {
+                        id: hover
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: root.selectedDate =
+                            root.selectedDate === parent.dateKey ? "" : parent.dateKey
                     }
                 }
             }
@@ -212,9 +289,9 @@ PanelWindow {
 
         Column {
             width: parent.width
-            visible: root.events.length > 0
+            visible: root.filteredEvents.length > 0
             Repeater {
-                model: root.events
+                model: root.filteredEvents
                 delegate: Item {
                     required property var modelData
                     width: parent.width
@@ -248,12 +325,12 @@ PanelWindow {
         }
 
         Rectangle {
-            visible: root.events.length === 0
+            visible: root.filteredEvents.length === 0
             width: parent.width; height: Theme.rowH
             color: Theme.ink1
             Text {
                 anchors.centerIn: parent
-                text: "no events"
+                text: root.selectedDate.length > 0 ? "no events that day" : "no events"
                 color: Theme.ink5
                 font.family: Theme.fontDisplay
                 font.italic: true
