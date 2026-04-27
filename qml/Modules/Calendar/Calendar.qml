@@ -82,22 +82,27 @@ PanelWindow {
             "gcalcli agenda --tsv --nocolor --details=calendar \"$AQS_FROM\" \"$AQS_TO\" 2>/dev/null || echo ''"]
         stdout: StdioCollector {
             onStreamFinished: {
+                // gcalcli columns: start_date | start_time | end_date |
+                // end_time | title | calendar. First row is the header
+                // unless we explicitly turn it off, so skip rows whose
+                // first cell isn't an ISO date (cheaper than --no-header
+                // which not all gcalcli builds expose).
                 var lines = (this.text || "").split("\n")
                 var evts = []
                 var byDate = {}
+                var dateRe = /^\d{4}-\d{2}-\d{2}$/
                 for (var i = 0; i < lines.length; i++) {
                     var parts = lines[i].split("\t")
                     if (parts.length < 4) continue
-                    var date    = parts[0] || ""
-                    var time    = parts[1] || ""
-                    var endDate = parts[2] || ""
-                    var endTime = parts[3] || ""
-                    var calName = parts.length >= 6 ? (parts[4] || "") : ""
-                    var title   = parts.length >= 6 ? (parts[5] || "")
-                                                   : (parts[4] || "")
+                    var date = parts[0] || ""
+                    if (!dateRe.test(date)) continue
                     var ev = {
-                        date: date, time: time, endTime: endTime,
-                        title: title, calendar: calName,
+                        date:     date,
+                        time:     parts[1] || "",
+                        endDate:  parts[2] || "",
+                        endTime:  parts[3] || "",
+                        title:    parts[4] || "",
+                        calendar: parts[5] || "",
                     }
                     evts.push(ev)
                     if (!byDate[date]) byDate[date] = []
@@ -124,10 +129,12 @@ PanelWindow {
         _add.running = true
     }
 
-    property var _today: new Date()
-    property int _todayDay: _today.getDate()
+    // Re-bound to ClockService.now so the today underline rolls over at
+    // midnight without requiring a shell restart.
+    property var _today: ClockService.now
+    property int _todayDay:   _today.getDate()
     property int _todayMonth: _today.getMonth()
-    property int _todayYear: _today.getFullYear()
+    property int _todayYear:  _today.getFullYear()
 
     function _daysInMonth(y, m) { return new Date(y, m + 1, 0).getDate() }
     function _firstDayOfWeek(y, m) { return new Date(y, m, 1).getDay() }
@@ -233,8 +240,10 @@ PanelWindow {
                     Rectangle {
                         anchors.fill: parent
                         anchors.margins: 2
-                        color: parent.isSelected ? Theme.ink2
+                        color: parent.isSelected ? Theme.ink3
                              : (hover.containsMouse ? Qt.rgba(1,1,1,0.04) : "transparent")
+                        border.width: parent.isSelected ? Theme.hairW : 0
+                        border.color: Theme.accent
                         antialiasing: false
                         Behavior on color { ColorAnimation { duration: Theme.tFast } }
                     }
