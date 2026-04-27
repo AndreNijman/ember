@@ -96,12 +96,17 @@ PanelWindow {
                     if (parts.length < 4) continue
                     var date = parts[0] || ""
                     if (!dateRe.test(date)) continue
+                    var rawTitle = parts[4] || ""
+                    // Drop placeholder rows: 'free time' style busy blocks
+                    // sync as '(No title)' from Google. The calendar name
+                    // alone is rarely informative on its own, so skip.
+                    if (rawTitle === "(No title)" || rawTitle === "") continue
                     var ev = {
                         date:     date,
                         time:     parts[1] || "",
                         endDate:  parts[2] || "",
                         endTime:  parts[3] || "",
-                        title:    parts[4] || "",
+                        title:    rawTitle,
                         calendar: parts[5] || "",
                     }
                     evts.push(ev)
