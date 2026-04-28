@@ -25,9 +25,11 @@ QtObject {
         return d + "d" + (rh > 0 ? rh + "h" : "")
     }
 
-    // Resolve script path relative to this QML file — project-root agnostic
-    readonly property string _script: Qt.resolvedUrl("").replace("file://", "")
-        .replace(/\/qml\/Services\/$/, "") + "/scripts/claude-usage.sh"
+    readonly property string _script: {
+        var u = Qt.resolvedUrl("./").toString().replace(/^file:\/\//, "")
+        var i = u.indexOf("/qml/Services")
+        return (i >= 0 ? u.slice(0, i) : u) + "/scripts/claude-usage.sh"
+    }
 
     function _refresh() {
         if (_proc.running) return
@@ -35,15 +37,15 @@ QtObject {
     }
 
     property Process _proc: Process {
-        property string _buf: ""
+        property string _line: ""
         command: ["bash", root._script]
-        stdout: StdioCollector {
-            onStreamFinished: { _proc._buf = this.text || "" }
+        onRunningChanged: if (running) _line = ""
+        stdout: SplitParser {
+            onRead: (line) => { _proc._line = line }
         }
-        onRunningChanged: if (running) _buf = ""
         onExited: {
             try {
-                var d = JSON.parse(_proc._buf.trim())
+                var d = JSON.parse(_proc._line)
                 root.valid          = d.valid === true
                 root.hour5Pct       = d.hour5Pct       || 0
                 root.hour5ResetMins = d.hour5ResetMins  || 0
