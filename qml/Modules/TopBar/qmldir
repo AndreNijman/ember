@@ -17,3 +17,4 @@ CpuPill         1.0 CpuPill.qml
 RamPill         1.0 RamPill.qml
 NetPill         1.0 NetPill.qml
 LockKeys        1.0 LockKeys.qml
+ClaudePill      1.0 ClaudePill.qml

@@ -82,6 +82,7 @@ PanelWindow {
             spacing: Theme.s2
             anchors.verticalCenter: parent.verticalCenter
             LockKeys {}
+            ClaudePill {}
             NetPill {}
             CpuPill {}
         }
